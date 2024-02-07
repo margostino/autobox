@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "autobox"
+version = "0.1.0"
+description = ""
+authors = ["margostino"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langchain = "^0.1.5"
+openai = "^1.11.1"
+langchain-openai = "^0.0.5"
+langchain-experimental = "^0.0.50"
+langchain-community = "^0.0.18"
+langchainhub = "^0.1.14"
+langgraph = "^0.0.23"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

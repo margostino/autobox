@@ -5,6 +5,7 @@ from autobox.network.agent import Agent, MessageBroker, Supervisor
 
 
 class Network:
+    # router: Router
     supervisor: Supervisor
     message_broker: MessageBroker
     agents: List[Agent]
@@ -27,8 +28,8 @@ class Network:
         for agent in self.agents:
             tasks.append(asyncio.create_task(agent.run()))
 
-        a = await asyncio.gather(*tasks)
-        print(a)
+        results = await asyncio.gather(*tasks)
+        # TODO: do something with results
 
     def stop(self):
         for agent in self.agents:

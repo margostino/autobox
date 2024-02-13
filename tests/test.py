@@ -37,6 +37,7 @@ network = Network(
 )
 
 simulator = Simulator(network)
+
 asyncio.run(
     simulator.run(
         "We need to come up with a bi-collateral agreement to fight Climate Change"

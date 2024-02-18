@@ -26,16 +26,16 @@ class Simulator:
 
     #     self.graph = self.workflow.compile()
 
-    async def run(self, input_message: str, timeout: int = 60):
+    async def run(self, task: str, timeout: int = 60):
         print("Autobox is running...")
         start_time = time.time()
 
         # Start network
-        task = asyncio.create_task(self.network.run(input_message))
+        async_task = asyncio.create_task(self.network.run(task))
 
         # Implement a timeout for the simulation
         try:
-            await asyncio.wait_for(task, timeout=timeout)
+            await asyncio.wait_for(async_task, timeout=timeout)
         except asyncio.TimeoutError:
             print("Simulation ended due to timeout.")
         finally:

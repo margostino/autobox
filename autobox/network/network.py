@@ -1,35 +1,43 @@
 import asyncio
 from typing import List
 
-from autobox.network.agent import Agent, MessageBroker, Supervisor
+from autobox.agents.supervisor import Supervisor
+from autobox.agents.worker import Worker
+from autobox.network.message_broker import MessageBroker
 
 
 class Network:
-    # router: Router
     supervisor: Supervisor
     message_broker: MessageBroker
-    agents: List[Agent]
+    agents: List[Worker]
+    running: bool
 
     def __init__(
-        self, agents: List[Agent], supervisor: Supervisor, message_broker: MessageBroker
+        self,
+        agents: List[Worker],
+        supervisor: Supervisor,
+        message_broker: MessageBroker,
     ):
         self.agents = agents
-        self.message_broker = message_broker
         self.supervisor = supervisor
+        self.message_broker = message_broker
 
-    def register_agent(self, agent: Agent):
+    def register_agent(self, agent: Worker):
         self.agents.append(agent)
 
-    async def run(self, input_message: str):
-        # Start agents
-        tasks = []
-        tasks.append(asyncio.create_task(self.supervisor.start(input_message)))
+    async def run(self, task: str):
+        self.running = True
+        async_tasks = [self.supervisor.solve(task), self.listen()]
+        task_result = await asyncio.gather(*async_tasks)
+        print(task_result)
 
-        for agent in self.agents:
-            tasks.append(asyncio.create_task(agent.run()))
-
-        results = await asyncio.gather(*tasks)
-        # TODO: do something with results
+    async def listen(self):
+        while self.running:
+            if not self.message_broker.mailbox.empty():
+                message = self.message_broker.mailbox.get_nowait()
+                self.supervisor.mailbox.put_nowait(message)
+            else:
+                await asyncio.sleep(1)
 
     def stop(self):
         for agent in self.agents:

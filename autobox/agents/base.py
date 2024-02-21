@@ -1,12 +1,14 @@
 import asyncio
 from abc import ABC, abstractmethod
+from ast import List
 from asyncio import Queue
 
 from langchain.agents import AgentExecutor
 from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
-from autobox.network.message_broker import MessageBroker
+from autobox.llm.openai import LLM
+from autobox.network.messaging import Message, MessageBroker
 
 messages = [
     "Hello, I am here to help you",
@@ -57,6 +59,8 @@ class Agent(ABC):
     executor: AgentExecutor
     memory: dict = {}
     running: bool
+    llm: LLM
+    memory: List[str]
 
     def __init__(
         self, name: str, mailbox: Queue, message_broker: MessageBroker, description: str
@@ -68,7 +72,9 @@ class Agent(ABC):
         self.message_broker = message_broker
         self.description = description
         self.running = True
-        self.executor = None  # self.create_agent_executor()
+        self.executor = None
+        self.llm = LLM()
+        self.memory = []
 
     async def listen(self):
         while self.running:
@@ -80,7 +86,7 @@ class Agent(ABC):
                 await asyncio.sleep(1)
 
     @abstractmethod
-    async def _handle(self, message: str):
+    async def _handle(self, message: Message):
         pass
 
     # def create_agent_executor(self):

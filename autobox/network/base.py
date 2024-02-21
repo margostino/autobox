@@ -3,7 +3,7 @@ from typing import List
 
 from autobox.agents.supervisor import Supervisor
 from autobox.agents.worker import Worker
-from autobox.network.message_broker import MessageBroker
+from autobox.network.messaging import MessageBroker
 
 
 class Network:

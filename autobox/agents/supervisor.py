@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from autobox.agents.base import Agent
 from autobox.agents.worker import Worker
-from autobox.network.message_broker import Message, MessageBroker
+from autobox.network.messaging import Message, MessageBroker
 
 messages = [
     "Hello, I am here to help you",
@@ -63,30 +63,45 @@ class Supervisor(Agent):
         self.agents = {}
 
     async def solve(self, task: str):
-        # call LLM to know which agent to start
-        # invoke agent X
+        self.memory["task"] = task
+        # start listening
         async_tasks = [agent.listen() for agent in self.agents.values()]
         async_tasks.append(self.listen())
-        async_tasks.append(self.route(task))
+
+        # simulate agent routing
+        agent_id = random.choice(list(self.agents.keys()))
+        agent = self.agents[agent_id]
+        message = Message(
+            value=task,
+            from_agent_id=self.id,
+        )
+        agent.mailbox.put_nowait(message)
+        self.memory["initial_agent"] = agent
+
         async_results = await asyncio.gather(*async_tasks)
         return async_results
 
-    async def route(self, task: str):
-        while self.running:
-            agent_id = random.choice(list(self.agents.keys()))
-            agent = self.agents[agent_id]
-            agent.mailbox.put_nowait(task)
-            await asyncio.sleep(2)
-            # get random number from zero to keys of agents
-            # agent = self.agents[random.randint(0, len(self.agents) - 1)]
+    # async def route(self, task: str):
+    #     while self.running:
+    #         agent_id = random.choice(list(self.agents.keys()))
+    #         agent = self.agents[agent_id]
+    #         agent.mailbox.put_nowait(task)
+    #         await asyncio.sleep(2)
+    #         # get random number from zero to keys of agents
+    #         # agent = self.agents[random.randint(0, len(self.agents) - 1)]
 
-    async def _handle(self, message: str):
+    async def _handle(self, message: Message):
+        if self.should_stop(message.value):
+            self.running = False
         random_message = random.choice(messages)
         reply = Message(random_message, self.id)
         self.message_broker.mailbox.put_nowait(reply)
         print(
             f"Supervisor ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
         )
+
+    def should_stop(self, message: str):
+        return message == "I am a doctor"
 
     # async def start(self, input_message: str):
     #     # pick a random agent id distinct from the entry agent id

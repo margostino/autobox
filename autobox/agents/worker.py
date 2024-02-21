@@ -1,7 +1,7 @@
 import random
 
 from autobox.agents.base import Agent
-from autobox.network.message_broker import Message, MessageBroker
+from autobox.network.messaging import Message, MessageBroker
 
 messages = [
     "Hello, I am here to help you",
@@ -27,8 +27,10 @@ class Worker(Agent):
     ):
         super().__init__(name, mailbox, message_broker, description)
 
-    async def _handle(self, message: str):
+    async def _handle(self, message: Message):
         random_message = random.choice(messages)
         reply = Message(random_message, self.id)
         self.message_broker.mailbox.put_nowait(reply)
-        print(f"Worker ({self.name}/{self.id}) handling: {message}")
+        print(
+            f"Worker ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
+        )

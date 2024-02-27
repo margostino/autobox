@@ -2,11 +2,12 @@ from typing import Dict
 
 from openai import OpenAI
 
+# from openai import OpenAI
+
 # from openai.types.chat import ChatCompletion
 
 
 class LLM:
-    client: OpenAI
 
     def __init__(self):
         self.client = OpenAI(model="gpt-4-turbo-preview")
@@ -21,8 +22,8 @@ class LLM:
                 {"role": "user", "content": message},
             ],
         )
-        print(response)
-        return {}
+        # print(response)
+        return response
         # print(response.choices[0].message)
 
         # response = self.llm.complete(

@@ -1,6 +1,6 @@
 import random
 
-from autobox.agents.base import Agent
+from autobox.agents.base import BaseAgent
 from autobox.network.messaging import Message, MessageBroker
 
 messages = [
@@ -15,7 +15,7 @@ messages = [
 ]
 
 
-class Worker(Agent):
+class Agent(BaseAgent):
     # supervisor: Supervisor
 
     def __init__(
@@ -28,6 +28,7 @@ class Worker(Agent):
         super().__init__(name, mailbox, message_broker, description)
 
     async def _handle(self, message: Message):
+        x = self.llm.invoke(message.value)
         random_message = random.choice(messages)
         reply = Message(random_message, self.id)
         self.message_broker.mailbox.put_nowait(reply)

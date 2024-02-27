@@ -1,32 +1,37 @@
 import asyncio
 from typing import List
 
+from autobox.agents.agent import Agent
+from autobox.agents.planner import Planner
 from autobox.agents.supervisor import Supervisor
-from autobox.agents.worker import Worker
 from autobox.network.messaging import MessageBroker
 
 
 class Network:
     supervisor: Supervisor
     message_broker: MessageBroker
-    agents: List[Worker]
+    agents: List[Agent]
     running: bool
+    planner: Planner
 
     def __init__(
         self,
-        agents: List[Worker],
+        agents: List[Agent],
         supervisor: Supervisor,
         message_broker: MessageBroker,
+        planner: Planner,
     ):
         self.agents = agents
         self.supervisor = supervisor
         self.message_broker = message_broker
+        self.planner = planner
 
-    def register_agent(self, agent: Worker):
+    def register_agent(self, agent: Agent):
         self.agents.append(agent)
 
     async def run(self, task: str):
         self.running = True
+        plan = self.planner.plan(task)
         async_tasks = [self.supervisor.solve(task), self.listen()]
         task_result = await asyncio.gather(*async_tasks)
         print(task_result)

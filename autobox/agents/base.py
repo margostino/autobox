@@ -1,9 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
-from ast import List
 from asyncio import Queue
 
-from langchain.agents import AgentExecutor
 from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
@@ -50,31 +48,25 @@ def get_country_prompt_for(country_name: str) -> PromptTemplate:
     )
 
 
-class Agent(ABC):
-    id: int
-    name: str
-    description: str
-    mailbox: Queue
-    message_broker: MessageBroker
-    executor: AgentExecutor
-    memory: dict = {}
-    running: bool
-    llm: LLM
-    memory: List[str]
+class BaseAgent(ABC):
 
     def __init__(
-        self, name: str, mailbox: Queue, message_broker: MessageBroker, description: str
+        self,
+        name: str,
+        mailbox: Queue,
+        message_broker: MessageBroker,
+        description: str,
+        prompt: str,
     ):
         self.id = hash(name) % 1000
         self.name = name
-        self.running = True
+        self.description = description
         self.mailbox = mailbox
         self.message_broker = message_broker
-        self.description = description
-        self.running = True
-        self.executor = None
+        self.memory = {}
         self.llm = LLM()
-        self.memory = []
+        self.prompt = prompt
+        self.running = True
 
     async def listen(self):
         while self.running:

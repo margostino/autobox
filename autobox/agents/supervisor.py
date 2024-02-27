@@ -6,8 +6,8 @@ from typing import Dict
 from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
-from autobox.agents.base import Agent
-from autobox.agents.worker import Worker
+from autobox.agents.agent import Agent
+from autobox.agents.base import BaseAgent
 from autobox.network.messaging import Message, MessageBroker
 
 messages = [
@@ -50,8 +50,8 @@ def get_country_prompt_for(country_name: str) -> PromptTemplate:
     )
 
 
-class Supervisor(Agent):
-    agents: Dict[int, Worker]
+class Supervisor(BaseAgent):
+    agents: Dict[int, Agent]
 
     def __init__(self, name: str, message_broker: MessageBroker):
         super().__init__(
@@ -59,6 +59,7 @@ class Supervisor(Agent):
             mailbox=Queue(),
             message_broker=message_broker,
             description="Supervisor",
+            prompt="Supervisor",
         )
         self.agents = {}
 
@@ -116,7 +117,7 @@ class Supervisor(Agent):
     #     )
     #     self.message_broker.publish(message)
 
-    def register_agent(self, agent: Worker):
+    def register_agent(self, agent: Agent):
         self.agents[agent.id] = agent
 
     # def send(self, message: Message):

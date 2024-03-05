@@ -32,6 +32,7 @@ class Network:
     async def run(self, task: str):
         self.running = True
         plan = self.planner.plan(task)
+        print(f"Plan: {plan}")
         async_tasks = [self.supervisor.solve(task), self.listen()]
         task_result = await asyncio.gather(*async_tasks)
         print(task_result)

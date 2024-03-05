@@ -28,180 +28,172 @@ There are different type of plans:
 - Sequential: this is one agent at a time. Every output is the input of the next agent.
 - Consensual: agents should agree on end condition (example: for negotiations use cases)
 
-The output must be ONLY a JSON with the following fields:
+The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan:
 {{
-    "steps": [
-        {{
-            "agent": name of the agent,
-            "steps": [
-                {{
-                    "tool": name of the tool,
-                    "args": object with the arguments for the tool
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Process",
+  "type": "object",
+  "properties": {{
+    "steps": {{
+      "type": "array",
+      "items": {{
+        "type": "object",
+        "properties": {{
+          "agent": {{
+            "type": "string",
+            "description": "name of the agent"
+          }},
+          "steps": {{
+            "type": "array",
+            "items": {{
+              "type": "object",
+              "properties": {{
+                "tool": {{
+                  "type": "string",
+                  "description": "name of the tool"
+                }},
+                "args": {{
+                  "type": "object",
+                  "description": "object with the arguments for the tool",
+                  "additionalProperties": true
                 }}
-            ]
-        }}
-    ],
-    "thinking_process": the rational behind the steps,
-    "end_condition": the condition that will stop all the agent process,
-   "type": sequential OR consensual
+              }},
+              "required": ["tool", "args"],
+              "additionalProperties": false
+            }}
+          }}
+        }},
+        "required": ["agent", "steps"],
+        "additionalProperties": false
+      }}
+    }},
+    "thinking_process": {{
+      "type": "string",
+      "description": "the rational behind the steps"
+    }},
+    "end_condition": {{
+      "type": "string",
+      "description": "the condition that will stop all the agent process"
+    }},
+    "type": {{
+      "type": "string",
+      "description": "sequential OR consensual",
+      "enum": ["sequential", "consensual"]
+    }}
+  }},
+  "required": ["steps", "thinking_process", "end_condition", "type"],
+  "additionalProperties": false
 }}
-
 
 === FOR EXAMPLE ===
 
 [AVAILABLE AGENTS]
-{{
-  "agents": [
-    {
+[
+    {{
       "name": "Joker",
       "description": "Agent that can generate jokes",
       "tools": ["joke"]
-    },
-    {
+    }},
+    {{
       "name": "Translator",
       "description": "Agent that can translate text",
       "tools": ["translate"]
-    },
-    {
+    }},
+    {{
       "name": "Brainstormer",
       "description": "Agent that can brainstorm ideas",
       "tools": ["translate"]
-    } 
-  ]
-}}
+    }}
+]
 
 [AVAILABLE TOOLS]
-{{
-  "tools": [
+[
     {{
-      "type": "function",
-      "function": {{
         "name": "lookup_contact_email",
         "description": "Looks up a contact and retrieves their email address",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "name": {{
-              "type": "string",
-              "description": "The name to look up"
+                "type": "string",
+                "description": "The name to look up"
             }}
-          }},
-          "required": ["name"]
-        }}
-      }}
+        }},
+        "required": ["name"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "email_to",
         "description": "Email the input text to a recipient",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The text to email"
+                "type": "string",
+                "description": "The text to email"
             }},
             "recipient": {{
-              "type": "string",
-              "description": "The recipient's email address. Multiple addresses may be included if separated by ';'."
+                "type": "string",
+                "description": "The recipient's email address. Multiple addresses may be included if separated by ';'."
             }}
-          }},
-          "required": ["input", "recipient"]
-        }}
-      }}
+        }},
+        "required": ["input", "recipient"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "translate",
         "description": "Translate the input to another language",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The text to translate"
+                "type": "string",
+                "description": "The text to translate"
             }},
             "language": {{
-              "type": "string",
-              "description": "The language to translate to"
+                "type": "string",
+                "description": "The language to translate to"
             }}
-          }},
-          "required": ["input", "language"]
-        }}
-      }}
+        }},
+        "required": ["input", "language"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "summarize",
         "description": "Summarize input text",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The text to summarize"
+                "type": "string",
+                "description": "The text to summarize"
             }}
-          }},
-          "required": ["input"]
-        }}
-      }}
+        }},
+        "required": ["input"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "joke",
         "description": "Generate a funny joke",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The input to generate a joke about"
+                "type": "string",
+                "description": "The input to generate a joke about"
             }}
-          }},
-          "required": ["input"]
-        }}
-      }}
+        }},
+        "required": ["input"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "brainstorm",
         "description": "Brainstorm ideas",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The input to brainstorm about"
+                "type": "string",
+                "description": "The input to brainstorm about"
             }}
-          }},
-          "required": ["input"]
-        }}
-      }}
+        }},
+        "required": ["input"]
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "poe",
         "description": "Write in the style of author Edgar Allen Poe",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
-              "type": "string",
-              "description": "The input to write about"
+                "type": "string",
+                "description": "The input to write about"
             }}
-          }},
-          "required": ["input"]
-        }}
-      }}
+        }},
+        "required": ["input"]
     }}
-  ]
-}}
+]
 
 [TASK]
 "Tell a joke about cars. Translate it to Spanish"
@@ -217,14 +209,13 @@ The output must be ONLY a JSON with the following fields:
 
 === END OF THE EXAMPLE ===
 
-[AVAILABLE AGENTS]
-{agents}
-
-[AVAILABLE TOOLS]
-{tools}
-
-[TASK]
-{task}
-
-[OUTPUT]
 """
+
+# [AVAILABLE AGENTS]
+# {agents}
+# [AVAILABLE TOOLS]
+# {tools}
+# [TASK]
+# {task}
+
+# [OUTPUT]

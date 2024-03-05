@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from autobox.llm.openai import LLM
 from autobox.network.messaging import Message, MessageBroker
+from autobox.tools.base import BaseTool
 
 messages = [
     "Hello, I am here to help you",
@@ -56,7 +57,7 @@ class BaseAgent(ABC):
         mailbox: Queue,
         message_broker: MessageBroker,
         description: str,
-        prompt: str,
+        tools: list[BaseTool] = [],
     ):
         self.id = hash(name) % 1000
         self.name = name
@@ -65,8 +66,8 @@ class BaseAgent(ABC):
         self.message_broker = message_broker
         self.memory = {}
         self.llm = LLM()
-        self.prompt = prompt
         self.running = True
+        self.tools = tools
 
     async def listen(self):
         while self.running:
@@ -80,6 +81,13 @@ class BaseAgent(ABC):
     @abstractmethod
     async def _handle(self, message: Message):
         pass
+
+    def get_agent_profile(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "tools": [tool.name for tool in self.tools],
+        }
 
     # def create_agent_executor(self):
     #     llm = ChatOpenAI(model="gpt-4-1106-preview")

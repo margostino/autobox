@@ -59,7 +59,6 @@ class Supervisor(BaseAgent):
             mailbox=Queue(),
             message_broker=message_broker,
             description="Supervisor",
-            prompt="Supervisor",
         )
         self.agents = {}
 

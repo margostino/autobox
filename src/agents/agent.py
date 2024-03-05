@@ -2,6 +2,7 @@ import random
 
 from autobox.agents.base import BaseAgent
 from autobox.network.messaging import Message, MessageBroker
+from autobox.tools.base import BaseTool
 
 messages = [
     "Hello, I am here to help you",
@@ -24,8 +25,9 @@ class Agent(BaseAgent):
         mailbox,
         message_broker=MessageBroker,
         description: str = None,
+        tools: list[BaseTool] = None,
     ):
-        super().__init__(name, mailbox, message_broker, description)
+        super().__init__(name, mailbox, message_broker, description, tools)
 
     async def _handle(self, message: Message):
         x = self.llm.invoke(message.value)

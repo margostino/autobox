@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from autobox.network.base import Network
+from src.network.base import Network
 
 
 class Simulator:

@@ -1,8 +1,7 @@
 import random
 
-from autobox.agents.base import BaseAgent
-from autobox.network.messaging import Message, MessageBroker
-from autobox.tools.base import BaseTool
+from src.agents.base import BaseAgent
+from src.network.messaging import Message
 
 messages = [
     "Hello, I am here to help you",
@@ -17,23 +16,15 @@ messages = [
 
 
 class Agent(BaseAgent):
-    # supervisor: Supervisor
 
-    def __init__(
-        self,
-        name: str,
-        mailbox,
-        message_broker=MessageBroker,
-        description: str = None,
-        tools: list[BaseTool] = None,
-    ):
-        super().__init__(name, mailbox, message_broker, description, tools)
+    def __init__(self, name: str, description: str = None, tools: dict = None):
+        super().__init__(name, description, tools)
 
     async def _handle(self, message: Message):
         x = self.llm.invoke(message.value)
         random_message = random.choice(messages)
         reply = Message(random_message, self.id)
-        self.message_broker.mailbox.put_nowait(reply)
+
         print(
             f"Worker ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
         )

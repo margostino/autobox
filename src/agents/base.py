@@ -1,13 +1,11 @@
 import asyncio
 from abc import ABC, abstractmethod
-from asyncio import Queue
 
 from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
-from autobox.llm.openai import LLM
-from autobox.network.messaging import Message, MessageBroker
-from autobox.tools.base import BaseTool
+from src.llm.openai import LLM
+from src.network.messaging import Message
 
 messages = [
     "Hello, I am here to help you",
@@ -54,16 +52,13 @@ class BaseAgent(ABC):
     def __init__(
         self,
         name: str,
-        mailbox: Queue,
-        message_broker: MessageBroker,
         description: str,
-        tools: list[BaseTool] = [],
+        tools: dict = None,
     ):
         self.id = hash(name) % 1000
         self.name = name
         self.description = description
-        self.mailbox = mailbox
-        self.message_broker = message_broker
+        self.mailbox = asyncio.Queue()
         self.memory = {}
         self.llm = LLM()
         self.running = True

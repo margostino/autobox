@@ -6,9 +6,9 @@ from typing import Dict
 from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
-from autobox.agents.agent import Agent
-from autobox.agents.base import BaseAgent
-from autobox.network.messaging import Message, MessageBroker
+from src.agents.agent import Agent
+from src.agents.base import BaseAgent
+from src.network.messaging import Message, MessageBroker
 
 messages = [
     "Hello, I am here to help you",

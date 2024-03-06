@@ -1,10 +1,10 @@
 import asyncio
 from typing import List
 
-from autobox.agents.agent import Agent
-from autobox.agents.planner import Planner
-from autobox.agents.supervisor import Supervisor
-from autobox.network.messaging import MessageBroker
+from src.agents.agent import Agent
+from src.agents.planner import Planner
+from src.agents.supervisor import Supervisor
+from src.network.messaging import MessageBroker
 
 
 class Network:

@@ -1,22 +1,25 @@
-import asyncio
+import os
 
 from dotenv import load_dotenv
 
-from src.agents.agent import Agent
-from src.agents.planner import Planner
 from src.agents.supervisor import Supervisor
-from src.autobox import Simulator
 from src.config.loader import load_config
-from src.network import messaging
-from src.network.base import Network
+from src.network.messaging import MessageBroker
 from src.tools.base import BaseTool
 
 load_dotenv()
 
-config = load_config()
+config = load_config(os.getenv("AUTOBOX_CONFIG_PATH"))
 
-messaging = messaging.MessageBroker()
+messaging = MessageBroker()
 supervisor = Supervisor(name="Supervisor", message_broker=messaging)
+
+tools = []
+for tool_config in config["tools"]:
+    tool = BaseTool(**tool_config)
+    tool.message_broker = messaging
+    tool.supervisor = supervisor
+    messaging.register_tool(tool)
 tools = [
     BaseTool(
         "evaluate_and_reply_proposal",

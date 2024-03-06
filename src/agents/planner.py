@@ -1,5 +1,5 @@
-from autobox.agents.prompts import PLANNER_PROMPT
-from autobox.llm.openai import LLM
+from src.agents.prompts import PLANNER_PROMPT
+from src.llm.openai import LLM
 
 
 class Planner:

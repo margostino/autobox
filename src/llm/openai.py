@@ -1,5 +1,3 @@
-from typing import Dict
-
 from openai import OpenAI
 
 # from openai import OpenAI
@@ -9,14 +7,15 @@ from openai import OpenAI
 
 class LLM:
 
-    def __init__(self, system_prompt: str = None):
+    def __init__(self, system_prompt: str = None, model: str = None):
         self.client = OpenAI()
+        self.model = model
         self.system_prompt = system_prompt
 
     # def bind_functions(self, functions):
     #     self.functions = functions
 
-    def invoke(self, message: str) -> Dict:
+    def invoke(self, message: str) -> str:
         response = self.client.chat.completions.create(
             model="gpt-4-turbo-preview",
             messages=[
@@ -24,16 +23,4 @@ class LLM:
                 {"role": "user", "content": message},
             ],
         )
-        print(response.choices[0].message.content)
         return response.choices[0].message.content
-        # print(response.choices[0].message)
-
-        # response = self.llm.complete(
-        #     prompt=message.value,
-        #     max_tokens=100,
-        #     temperature=0.7,
-        #     top_p=1.0,
-        #     frequency_penalty=0.0,
-        #     presence_penalty=0.0,
-        #     stop=["\n"],
-        # )

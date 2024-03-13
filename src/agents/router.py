@@ -6,8 +6,10 @@ from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from src.agents.base import BaseAgent
+from src.agents.planner import Planner
 from src.agents.worker import Worker
 from src.engine.messaging import Message
+from src.tools.base import BaseTool
 
 messages = [
     "Hello, I am here to help you",
@@ -49,15 +51,36 @@ def get_country_prompt_for(country_name: str) -> PromptTemplate:
     )
 
 
-class Supervisor(BaseAgent):
+class Router(BaseAgent):
     workers: Dict[int, Worker]
+    planner: Planner
 
-    def __init__(self, name: str, workers: Dict[int, Worker] = None):
+    def __init__(
+        self,
+        name: str,
+        tools: Dict[str, BaseTool] = None,
+    ):
         super().__init__(
             name=name,
             description="Supervisor",
         )
-        self.workers = workers
+        self.tools = tools
+        self.plan = None
+
+    async def _handle(self, message: Message):
+        if not self.memory:
+            task = message.value
+            self.plan = self.planner.plan(task)
+            self.memory.append(f"Task received: {task}")
+            self.memory.append(f"Plan: {self.plan}")
+
+        to_agent = self.plan.steps[0].agent_id
+        message.from_agent_id = self.id
+        self.workers[to_agent].mailbox.put_nowait(message)
+        print(f"Routing message to {to_agent}: {message.value}")
+        # x = self.llm.invoke(message.value)
+        # random_message = random.choice(messages)
+        # reply = Message(random_message, self.id)
 
     async def solve(self, task: str):
         self.memory["task"] = task
@@ -87,14 +110,57 @@ class Supervisor(BaseAgent):
     #         # get random number from zero to keys of agents
     #         # agent = self.agents[random.randint(0, len(self.agents) - 1)]
 
-    async def _handle(self, message: Message):
-        if self.should_stop(message.value):
-            self.running = False
-        random_message = random.choice(messages)
-        reply = Message(random_message, self.id)
-        print(
-            f"Supervisor ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
-        )
+    # async def _handle(self, message: Message):
+    #     if self.should_stop(message.value):
+    #         self.running = False
+    #     random_message = random.choice(messages)
+    #     reply = Message(random_message, self.id)
+    #     self.message_broker.mailbox.put_nowait(reply)
+    #     print(
+    #         f"Supervisor ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
+    #     )
 
     def should_stop(self, message: str):
         return message == "I am a doctor"
+
+    # async def start(self, input_message: str):
+    #     # pick a random agent id distinct from the entry agent id
+    #     from_agent_id = self.entry_agent_id
+    #     while from_agent_id == self.entry_agent_id:
+    #         from_agent_id = random.choice(list(self.agents.keys()))
+
+    #     message = Message(
+    #         to_agent_id=self.entry_agent_id,
+    #         value=input_message,
+    #         from_agent_id=from_agent_id,
+    #     )
+    #     self.message_broker.publish(message)
+
+    def register_workers(self, workers: Dict[int, Worker]):
+        self.workers = workers
+        self.generate_planner()
+
+    def register_worker(self, worker: Worker):
+        self.workers[worker.id] = worker
+        self.generate_planner()
+
+    def generate_planner(self):
+        agents_prompt = [worker.to_prompt() for worker in self.workers.values()]
+        tools_prompt = [tool.to_prompt() for tool in self.tools.values()]
+        self.planner = Planner({"agents": agents_prompt, "tools": tools_prompt})
+
+    # def send(self, message: Message):
+    #     self.message_broker.publish(message)
+
+
+# class Router:
+#     agents: Dict[int, Agent]
+
+#     def __init__(self, agents: Dict[int, Agent]):
+#         self.agents = agents
+
+#     def route(self, message: Message):
+#         if message.to_agent_id in self.agents:
+#             self.agents[message.to_agent_id].mailbox.put_nowait(message)
+#         else:
+#             raise ValueError(f"Agent with id {message.to_agent_id} not found")

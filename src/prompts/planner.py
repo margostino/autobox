@@ -43,6 +43,10 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
             "type": "string",
             "description": "name of the agent"
           }},
+          "agent_id": {{
+            "type": "number",
+            "description": "ID of the agent"
+          }}          
           "steps": {{
             "type": "array",
             "items": {{
@@ -91,16 +95,19 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
 [
     {{
       "name": "Joker",
+      "id": 1,
       "description": "Agent that can generate jokes",
       "tools": ["joke"]
     }},
     {{
       "name": "Translator",
+      "id": 2,
       "description": "Agent that can translate text",
       "tools": ["translate"]
     }},
     {{
       "name": "Brainstormer",
+      "id": 3,
       "description": "Agent that can brainstorm ideas",
       "tools": ["translate"]
     }}
@@ -200,8 +207,8 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
 
 [OUTPUT]
 {
-    "steps": [{{"agent": "Joker", "steps": ["tool": "joke", "args":{{"input": "cars"}}]}},
-    {{"agent": "Translator", "steps": ["tool": "translate", "args":{{"language": "Spanish"}}]}}],
+    "steps": [{{"agent": "Joker", "agent_id": 1, "steps": ["tool": "joke", "args":{{"input": "cars"}}]}},
+    {{"agent": "Translator", , "agent_id": 2, "steps": ["tool": "translate", "args":{{"language": "Spanish"}}]}}],
   "thinking_process": "I will generate a joke about cars and then translate it to Spanish",
   "end_condition": "I will stop when I have a joke in Spanish",
   "type": "sequential"
@@ -210,12 +217,3 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
 === END OF THE EXAMPLE ===
 
 """
-
-# [AVAILABLE AGENTS]
-# {agents}
-# [AVAILABLE TOOLS]
-# {tools}
-# [TASK]
-# {task}
-
-# [OUTPUT]

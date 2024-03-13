@@ -1,9 +1,19 @@
+from typing import Callable
+
+
 class BaseTool:
 
-    def __init__(self, name: str, description: str = None, parameters: dict = {}):
+    def __init__(
+        self,
+        name: str,
+        description: str = None,
+        parameters: dict = {},
+        function: Callable = None,
+    ):
         self.name = name
         self.description = description
         self.parameters = parameters
+        self.function = function
 
     async def async_handle(self):
         print("Handling message")
@@ -11,7 +21,7 @@ class BaseTool:
     def handle(self):
         print("Handling message")
 
-    def get_tool_profile(self):
+    def to_prompt(self):
         return {
             "name": self.name,
             "description": self.description,

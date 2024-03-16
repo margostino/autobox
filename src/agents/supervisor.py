@@ -68,10 +68,7 @@ class Supervisor(BaseAgent):
         # simulate agent routing
         agent_id = random.choice(list(self.agents.keys()))
         agent = self.agents[agent_id]
-        message = Message(
-            value=task,
-            from_agent_id=self.id,
-        )
+        message = Message(task, self.id, self.name)
         agent.mailbox.put_nowait(message)
         self.memory["initial_agent"] = agent
 
@@ -91,7 +88,7 @@ class Supervisor(BaseAgent):
         if self.should_stop(message.value):
             self.running = False
         random_message = random.choice(messages)
-        reply = Message(random_message, self.id)
+        reply = Message(random_message, self.id, self.name)
         print(
             f"Supervisor ({self.name}/{self.id}) handling message from {message.from_agent_id}: {message.value}"
         )

@@ -1,0 +1,6 @@
+[simulator]
+timeout = 300
+
+[router]
+max_steps = 10
+verbose = false

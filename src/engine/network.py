@@ -4,13 +4,11 @@ from typing import Dict
 from src.agents.router import Router
 from src.agents.supervisor import Supervisor
 from src.agents.worker import Worker
-from src.engine.messaging import Message
 
 
 class Network:
     supervisor: Supervisor
     workers: Dict[int, Worker]
-    running: bool
     router: Router
 
     def __init__(
@@ -27,11 +25,7 @@ class Network:
         self.workers.append(worker)
 
     async def run(self, task: str):
-        self.running = True
-        # plan = self.planner.plan(task)
-        # print(f"Plan: {plan}")
-        start_message = Message(task)
-        self.router.mailbox.put_nowait(start_message)
+        self.router.route(task)
         async_tasks = [
             self.router.listen(),
             *[worker.listen() for worker in self.workers.values()],

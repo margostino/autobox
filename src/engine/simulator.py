@@ -11,7 +11,7 @@ class Simulator:
         self.network = network
 
     async def run(self, task: str, timeout: int = 60):
-        print("Autobox is running...")
+        print("(Simulator) Autobox started...")
         start_time = time.time()
 
         # Start network

@@ -11,12 +11,13 @@ PlanType = Literal["sequential", "consensual"]
 
 class AgentStep(BaseModel):
     tool: str
-    args: Any
+    args: dict[str, Any]
 
 
 class PlanStep(BaseModel):
     agent: str
     agent_id: int
+    sub_task: str
     steps: List[AgentStep]
 
 
@@ -35,12 +36,10 @@ class Planner:
 
     def plan(self, task: str) -> Plan:
         message = self._get_message(task)
-        print(f"Planner: {message}")
         response = self.llm.invoke(message)
         response = response.replace("```json", "").replace("```", "")
         data = json.loads(response)
         plan = Plan.parse_obj(data)
-        print(f"Planner response: {plan}")
         return plan
 
     def _get_message(self, task: str):

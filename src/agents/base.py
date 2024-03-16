@@ -3,8 +3,7 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, Field
 
-from src.engine.messaging import Message
-from src.llm.openai import LLM
+from engine.messaging import Message
 
 
 class LLMInput(BaseModel):
@@ -22,25 +21,28 @@ class BaseAgent(ABC):
         tools: dict = None,
         model: str = None,
         router=None,
+        verbose: bool = False,
     ):
         self.id = hash(name) % 1000
         self.name = name
         self.description = description
         self.mailbox = asyncio.Queue()
         self.memory = []
-        self.llm = LLM()
         self.running = True
         self.tools = tools
         self.router = router
+        self.verbose = verbose
 
     async def listen(self):
         while self.running:
             if not self.mailbox.empty():
                 message = self.mailbox.get_nowait()
-                # print(f"Agent {self.name} received message: {message}")
                 await self._handle(message)
             else:
                 await asyncio.sleep(1)
+
+    def stop(self):
+        self.running = False
 
     @abstractmethod
     async def _handle(self, message: Message):
@@ -53,3 +55,6 @@ class BaseAgent(ABC):
             "description": self.description,
             "tools": self.tools.keys(),
         }
+
+    def logger(self, message):
+        print(f"({self.name}) {message}")

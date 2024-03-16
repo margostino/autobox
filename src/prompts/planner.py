@@ -1,5 +1,6 @@
 PLANNER_PROMPT = """
 [CONTEXT]
+
 Autobox is a Python framework to build a multi AI agent system which work collaborative to solve a given task. 
 A system has the following components:
 
@@ -20,15 +21,15 @@ Make sure you have all information needed to call the agents you use in your pla
 Base your decisions on which agent and agent tools to use from the description and the name and arguments of the tool.
 Always output the arguments of the tool, even when arguments is an empty dictionary. MAKE SURE YOU USE ALL REQUIRED ARGUMENTS.
 
-You need to understand the role of each Agent and design and plan a workflow.  All tasks have an end condition but some might be tricky to establish. When the end condition is not clear or not defined you should consider 5 agents iteration max for a plan. Some agents and agent tools might be called more than once if needed.
-Every agent should use at least one of its tools.
-The plan should be as short as possible.
+You need to understand the role of each Agent and design and plan a workflow.  All tasks have an end condition but some might be tricky to establish. When the end condition is not clear or not defined you should consider 5 agents iteration max for a plan. Some agents and agent tools might be called more than once if needed. Every agent should use at least one of its tools. The plan should be as short as possible.
+
+Also part of the plan is to come up with a *sub_task* for each agent. This is a adapted and reduced sub-task from the original task.
 
 There are different type of plans:
 - Sequential: this is one agent at a time. Every output is the input of the next agent.
 - Consensual: agents should agree on end condition (example: for negotiations use cases)
 
-The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan:
+The OUTPUT must be ONLY a JSON. Following is the JSON SCHEMA for the output plan:
 {{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Agent Process",
@@ -46,7 +47,11 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
           "agent_id": {{
             "type": "number",
             "description": "ID of the agent"
-          }}          
+          }},
+          "sub_task": {{
+            "type": "string",
+            "description": "The input task for the agent which will be used by agent to achieve its goals. This is a adapted sub-task version from the original task."
+          }},
           "steps": {{
             "type": "array",
             "items": {{
@@ -106,8 +111,14 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
       "tools": ["translate"]
     }},
     {{
-      "name": "Brainstormer",
+      "name": "Summarizer",
       "id": 3,
+      "description": "Agent that can brainstorm ideas",
+      "tools": ["translate"]
+    }}
+    {{
+      "name": "Brainstormer",
+      "id": 4,
       "description": "Agent that can brainstorm ideas",
       "tools": ["translate"]
     }}
@@ -145,16 +156,20 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
         "name": "translate",
         "description": "Translate the input to another language",
         "parameters": {{
-            "input": {{
+            "text": {{
                 "type": "string",
                 "description": "The text to translate"
             }},
-            "language": {{
+            "target_language": {{
                 "type": "string",
                 "description": "The language to translate to"
+            }},
+            "source_language": {{
+                "type": "string",
+                "description": "The language source of the input text"
             }}
         }},
-        "required": ["input", "language"]
+        "required": ["text", "target_language", "source_language"]
     }},
     {{
         "name": "summarize",
@@ -203,16 +218,46 @@ The output must be ONLY a JSON. Following is the JSON SCHEMA for the output plan
 ]
 
 [TASK]
-"Tell a joke about cars. Translate it to Spanish"
+"Tell a joke about cars. Translate it to Spanish and print it"
 
 [OUTPUT]
+```
 {
-    "steps": [{{"agent": "Joker", "agent_id": 1, "steps": ["tool": "joke", "args":{{"input": "cars"}}]}},
-    {{"agent": "Translator", , "agent_id": 2, "steps": ["tool": "translate", "args":{{"language": "Spanish"}}]}}],
-  "thinking_process": "I will generate a joke about cars and then translate it to Spanish",
-  "end_condition": "I will stop when I have a joke in Spanish",
-  "type": "sequential"
- }
+    "steps": [
+        {
+            "agent": "Joker",
+            "agent_id": 1,
+            "sub_task": "tell a joke about cars",
+            "steps": [
+                {
+                    "tool": "joke",
+                    "args": {
+                        "input": "cars"
+                    }
+                }
+            ]
+        },
+        {
+            "agent": "Translator",
+            "agent_id": 2,
+            "sub_task": "translate the text ${AGENT_ID.1.output} into Spanish",
+            "steps": [
+                {
+                    "tool": "translate",
+                    "args": {
+                        "target_language": "Spanish",
+                        "source_language": "English",
+                        "text": "${AGENT_ID.1.output}",
+                    }
+                }
+            ]
+        }
+    ],
+    "thinking_process": "I will generate a joke about cars and then translate it to Spanish",
+    "end_condition": "I will stop when I have a joke in Spanish",
+    "type": "sequential"
+}
+```
 
 === END OF THE EXAMPLE ===
 

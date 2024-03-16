@@ -1,6 +1,5 @@
 import asyncio
 import importlib
-import os
 from typing import Dict
 
 from dotenv import load_dotenv
@@ -11,16 +10,13 @@ from src.agents.worker import Worker
 from src.engine.network import Network
 from src.engine.simulator import Simulator
 from src.tools.base import BaseTool
-from utils.loaders import load_config
 
 load_dotenv()
 
 
 class Orchestrator:
 
-    def __init__(self):
-        config = load_config(os.getenv("AUTOBOX_CONFIG_PATH"))
-
+    def __init__(self, config: Dict = None):
         tools = {}
         for tool in config["tools"]:
             tool_name = tool["name"]

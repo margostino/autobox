@@ -17,7 +17,7 @@ class LLM:
 
     def invoke(self, message: str) -> str:
         response = self.client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+            model=self.model,
             messages=[
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": message},

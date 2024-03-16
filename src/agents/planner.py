@@ -30,8 +30,8 @@ class Plan(BaseModel):
 
 class Planner:
 
-    def __init__(self, context={}):
-        self.llm = LLM(PLANNER_PROMPT)
+    def __init__(self, model: str = None, context: dict = {}):
+        self.llm = LLM(PLANNER_PROMPT, model=model)
         self.context = context
 
     def plan(self, task: str) -> Plan:

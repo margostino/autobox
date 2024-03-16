@@ -14,17 +14,20 @@ class Router(BaseAgent):
 
     def __init__(
         self,
-        name: str,
+        name: str = "Router",
+        description="Router of network",
         tools: Dict[str, BaseTool] = None,
         verbose: bool = False,
+        model: str = None,
     ):
         super().__init__(
             name=name,
-            description="Supervisor",
+            description=description,
             verbose=verbose,
         )
         self.tools = tools
         self.plan = None
+        self.model = model
 
     async def _handle(self, message: Message):
         if not self.memory:
@@ -74,4 +77,6 @@ class Router(BaseAgent):
     def generate_planner(self):
         agents_prompt = [worker.to_prompt() for worker in self.workers.values()]
         tools_prompt = [tool.to_prompt() for tool in self.tools.values()]
-        self.planner = Planner({"agents": agents_prompt, "tools": tools_prompt})
+        self.planner = Planner(
+            model=self.model, context={"agents": agents_prompt, "tools": tools_prompt}
+        )

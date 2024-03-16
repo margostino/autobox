@@ -20,7 +20,7 @@ class Simulator:
         try:
             await asyncio.wait_for(async_task, timeout=timeout)
         except asyncio.TimeoutError:
-            print("Simulation ended due to timeout.")
+            print("[Simulator] Simulation ended due to timeout.")
         finally:
             self.network.stop()
             print("[Simulator] Simulation finished.")

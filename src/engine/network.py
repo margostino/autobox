@@ -33,7 +33,7 @@ class Network:
             *[worker.listen() for worker in self.workers.values()],
         ]
         await asyncio.gather(*async_tasks)
-        output = self.router.memory[-1]
+        output = self.router.memory[-1]  # TODO: define how to get final output
         print(f"Output: {output}")
 
     def stop(self):

@@ -4,3 +4,4 @@ timeout = 300
 [router]
 max_steps = 10
 verbose = true
+model = "gpt-3.5-turbo"

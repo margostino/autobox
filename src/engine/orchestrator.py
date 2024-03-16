@@ -1,7 +1,6 @@
 import importlib
 from typing import Dict
 
-
 from src.agents.router import Router
 from src.agents.supervisor import Supervisor
 from src.agents.worker import Worker
@@ -16,6 +15,7 @@ class Orchestrator:
 
     def __init__(self, config: Dict = None):
         tools = {}
+
         for tool in config["tools"]:
             tool_name = tool["name"]
             module_path = f"config.tools.{tool_name}"
@@ -25,7 +25,11 @@ class Orchestrator:
             tool = BaseTool(**tool)
             tools[tool_name] = tool
 
-        router = Router(name="Router", tools=tools, verbose=config["router"]["verbose"])
+        router = Router(
+            tools=tools,
+            verbose=config["router"]["verbose"],
+            model=config["router"]["model"],
+        )
         workers: Dict[int, Worker] = {}
         for worker in config["agents"]:
             worker_tools = {}

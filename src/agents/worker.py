@@ -1,7 +1,7 @@
+from engine.messaging import Message
 from llm.openai import LLM
 from prompts.worker import WORKER_PROMPT
 from src.agents.base import BaseAgent
-from src.engine.messaging import Message
 
 
 class Worker(BaseAgent):
@@ -16,7 +16,7 @@ class Worker(BaseAgent):
         verbose: bool = False,
     ):
         super().__init__(name, description, tools, model, router, verbose)
-        self.llm = LLM(WORKER_PROMPT)
+        self.llm = LLM(WORKER_PROMPT, model=model)
 
     async def _handle(self, message: Message):
         self.track(f"handling message from {message.from_agent_name}")

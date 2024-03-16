@@ -1,6 +1,7 @@
 import asyncio
 from typing import Dict
 
+from engine.messaging import Message
 from src.agents.router import Router
 from src.agents.supervisor import Supervisor
 from src.agents.worker import Worker
@@ -25,15 +26,18 @@ class Network:
         self.workers.append(worker)
 
     async def run(self, task: str):
-        self.router.route(task)
+        start_message = Message(task)
+        self.router.mailbox.put_nowait(start_message)
         async_tasks = [
             self.router.listen(),
             *[worker.listen() for worker in self.workers.values()],
         ]
-        task_result = await asyncio.gather(*async_tasks)
-        print(task_result)
+        await asyncio.gather(*async_tasks)
+        output = self.router.memory[-1]
+        print(f"Output: {output}")
 
     def stop(self):
+        self.router.stop()
         for worker in self.workers.values():
             worker.running = False
         print("Network stopped.")

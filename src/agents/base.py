@@ -58,3 +58,11 @@ class BaseAgent(ABC):
 
     def logger(self, message):
         print(f"({self.name}) {message}")
+
+    def track(self, message):
+        self.memory.append(message)
+        if self.verbose:
+            self.logger(message)
+
+    def record(self, message):
+        self.memory.append(message)

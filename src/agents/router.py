@@ -16,25 +16,22 @@ class Router(BaseAgent):
         self,
         name: str,
         tools: Dict[str, BaseTool] = None,
+        verbose: bool = False,
     ):
         super().__init__(
             name=name,
             description="Supervisor",
+            verbose=verbose,
         )
         self.tools = tools
         self.plan = None
-
-    def route(self, task: str):
-        start_message = Message(task, self.id, self.name)
-        self.mailbox.put_nowait(start_message)
 
     async def _handle(self, message: Message):
         if not self.memory:
             task = message.value
             self.plan = self.planner.plan(task)
-            self.logger(f"initial routing for solving task: {task}")
-            self.memory.append(f"task received: {task}")
-            self.memory.append(f"plan: {self.plan}")
+            self.track(f"task received: {task}")
+            self.track(f"plan: {self.plan}")
 
         if message.from_agent_id is None:
             self.current_step = 0
@@ -42,7 +39,8 @@ class Router(BaseAgent):
             self.current_step += 1
 
         if self.current_step >= len(self.plan.steps):
-            self.logger("task completed, stopping router and workers")
+            self.track("task completed, stopping router and workers")
+            self.record(message.value)
             for worker in self.workers.values():
                 worker.stop()
             self.stop()
@@ -62,8 +60,8 @@ class Router(BaseAgent):
             ```
             """
         message.from_agent_id = self.id
+        self.track(f"routing message to {to_agent_name} with sub-task: {sub_task}")
         self.workers[to_agent_id].mailbox.put_nowait(message)
-        self.logger(f"routing message to {to_agent_name} with sub-task: {sub_task}")
 
     def register_workers(self, workers: Dict[int, Worker]):
         self.workers = workers

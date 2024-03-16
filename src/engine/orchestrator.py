@@ -27,7 +27,7 @@ class Orchestrator:
             tool = BaseTool(**tool)
             tools[tool_name] = tool
 
-        router = Router(name="Router", tools=tools)
+        router = Router(name="Router", tools=tools, verbose=config["router"]["verbose"])
         workers: Dict[int, Worker] = {}
         for worker in config["agents"]:
             worker_tools = {}

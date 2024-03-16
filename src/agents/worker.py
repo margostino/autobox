@@ -19,8 +19,9 @@ class Worker(BaseAgent):
         self.llm = LLM(WORKER_PROMPT)
 
     async def _handle(self, message: Message):
-        self.logger(f"handling message from {message.from_agent_name}")
+        self.track(f"handling message from {message.from_agent_name}")
         response = self.llm.invoke(message.value)
+        self.record(response)
         reply = Message(response, self.id, self.name)
         self.router.mailbox.put_nowait(reply)
-        self.logger("reply to router")
+        self.track("reply sent to router")

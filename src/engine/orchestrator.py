@@ -1,8 +1,6 @@
-import asyncio
 import importlib
 from typing import Dict
 
-from dotenv import load_dotenv
 
 from src.agents.router import Router
 from src.agents.supervisor import Supervisor
@@ -11,7 +9,7 @@ from src.engine.network import Network
 from src.engine.simulator import Simulator
 from src.tools.base import BaseTool
 
-load_dotenv()
+# load_dotenv()
 
 
 class Orchestrator:
@@ -43,10 +41,3 @@ class Orchestrator:
         network = Network(workers=workers, supervisor=supervisor, router=router)
 
         self.simulator = Simulator(network)
-
-    def run(self):
-        asyncio.run(
-            self.simulator.run(
-                task="We need to come up with a bi-collateral agreement to fight Climate Change"
-            )
-        )

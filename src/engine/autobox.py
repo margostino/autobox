@@ -11,6 +11,7 @@ class Autobox:
         self.config = config
         self.simulator = orchestrator.simulator
 
-    async def run(self, task: str, timeout: int = 60):
+    async def run(self):
+        task = self.config["tasks"][0]["task"]  # TODO: Add support for multiple tasks
         timeout = self.config["simulator"]["timeout"]
         await self.simulator.run(task, timeout=timeout)

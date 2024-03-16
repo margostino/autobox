@@ -40,4 +40,4 @@ class Network:
         self.router.stop()
         for worker in self.workers.values():
             worker.running = False
-        print("Network stopped.")
+        print("[Network] network stopped.")

@@ -31,7 +31,7 @@ class Router(BaseAgent):
             task = message.value
             self.plan = self.planner.plan(task)
             self.track(f"task received: {task}")
-            self.track(f"plan: {self.plan}")
+            self.record(f"plan: {self.plan}")
 
         if message.from_agent_id is None:
             self.current_step = 0

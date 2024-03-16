@@ -1,7 +1,4 @@
 class Message:
-    value: str
-    from_agent_name: str = None
-    from_agent_id: int = None
 
     def __init__(
         self, value: str, from_agent_id: int = None, from_agent_name: str = None

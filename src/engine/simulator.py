@@ -11,7 +11,7 @@ class Simulator:
         self.network = network
 
     async def run(self, task: str, timeout: int = 60):
-        print("(Simulator) Autobox started...")
+        print("[Simulator] Autobox started...")
         start_time = time.time()
 
         # Start network
@@ -23,7 +23,7 @@ class Simulator:
             print("Simulation ended due to timeout.")
         finally:
             self.network.stop()
-            print("Simulation finished.")
+            print("[Simulator] Simulation finished.")
 
         elapsed_time = int(time.time() - start_time)
-        print(f"Elapsed time: {elapsed_time} seconds.")
+        print(f"[Simulator] Elapsed time: {elapsed_time} seconds.")

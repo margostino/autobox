@@ -8,5 +8,7 @@ def load_config(path: str) -> dict:
         tools_config = tomllib.load(f)
     with open(f"{path}/autobox.toml", "rb") as f:
         autobox_config = tomllib.load(f)
+    with open(f"{path}/tasks.toml", "rb") as f:
+        tasks_config = tomllib.load(f)
 
-    return {**agents_config, **tools_config, **autobox_config}
+    return {**agents_config, **tools_config, **autobox_config, **tasks_config}

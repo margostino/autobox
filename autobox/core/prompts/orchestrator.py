@@ -23,6 +23,6 @@ Today's date is ${CURRENT_TIMESTAMP}. Helpful info for decision-making process.
 
 <output>
 - You can choose between calling one or more functions in parallel or return the final decision and agreement between the agents but you cannot do both at the same time.
-- If you choose return a final decision and agreement your response should not be more than 500 words.
+- If you choose return a final decision and agreement your response should not be more than 500 words. This should include a summary of the process, the commitment of each agent, the final decision and the final agreement.
 </output>
   """

@@ -1,7 +1,7 @@
 import asyncio
 import json
 from asyncio import Queue
-from typing import Dict, List
+from typing import List
 
 from openai.types.chat import ChatCompletion
 
@@ -117,40 +117,3 @@ class Agent:
                 message = self.mailbox.get_nowait()
                 await self.handle_message(message)
             await asyncio.sleep(1)
-
-
-class Supervisor:
-    name: str
-    mailbox: Queue
-    entry_agent_id: int
-    agents: Dict[int, Agent]
-
-    message_broker: "MessageBroker"
-
-    def __init__(self, name: str, message_broker: "MessageBroker"):
-        self.name = name
-        self.entry_agent_id = None
-        self.agents = {}
-        self.mailbox = Queue(maxsize=10 * 2)
-        self.message_broker = message_broker
-
-    async def start(self, input_message: str):
-        # pick a random agent id distinct from the entry agent id
-        from_agent_id = self.entry_agent_id
-        while from_agent_id == self.entry_agent_id:
-            from_agent_id = random.choice(list(self.agents.keys()))
-
-        message = Message(
-            to_agent_id=self.entry_agent_id,
-            value=input_message,
-            from_agent_id=from_agent_id,
-        )
-        self.message_broker.publish(message)
-
-    def register_agent(self, agent: Agent, is_initial=False):
-        agent.supervisor = self
-        self.agents[agent.id] = agent
-        self.entry_agent_id = agent.id if is_initial else self.entry_agent_id
-
-    def send(self, message: Message):
-        self.message_broker.publish(message)

@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from autobox.core.agent import Agent, Supervisor
+from autobox.core.agent import Agent
 
 # from autobox.config.loader import load_config
 from autobox.core.llm import LLM
@@ -24,7 +24,6 @@ def main():
         tools = json.load(file)
 
     message_broker = MessageBroker()
-    supervisor = Supervisor(name="Supervisor", message_broker=message_broker)
 
     sweden_agent = Agent(
         name="SWEDEN",
@@ -55,18 +54,15 @@ def main():
     message_broker.subscribe(sweden_agent)
     message_broker.subscribe(argentina_agent)
     message_broker.subscribe(orchestrator)
-    supervisor.register_agent(argentina_agent, is_initial=True)
-    supervisor.register_agent(sweden_agent)
 
     network = Network(
         agents=[sweden_agent, argentina_agent],
-        supervisor=supervisor,
         orchestrator=orchestrator,
         message_broker=message_broker,
     )
 
     simulator = Simulator(network)
-    asyncio.run(simulator.run())
+    asyncio.run(simulator.run(timeout=300))
 
 
 main()

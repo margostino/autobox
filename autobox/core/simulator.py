@@ -1,7 +1,8 @@
 import asyncio
 import time
 
-from autobox.network.network import Network
+from autobox.core.network import Network
+from autobox.utils import blue, green, yellow
 
 
 class Simulator:
@@ -26,33 +27,25 @@ class Simulator:
 
     #     self.graph = self.workflow.compile()
 
-    async def run(self, input_message: str, timeout: int = 60):
-        print("Autobox is running...")
+    async def run(self, timeout: int = 120):
+        print(f"{green('Autobox is running...')}")
         start_time = time.time()
 
         # Start network
-        task = asyncio.create_task(self.network.run(input_message))
+        task = asyncio.create_task(self.network.run())
 
         # Implement a timeout for the simulation
         try:
             await asyncio.wait_for(task, timeout=timeout)
         except asyncio.TimeoutError:
-            print("Simulation ended due to timeout.")
+            print(f"{yellow('Simulation ended due to timeout.')}")
         finally:
             self.network.stop()
-            print("Simulation finished.")
+            print(f"{blue('Simulation finished.')}")
 
         # calculate elapsed time in seconds with no decimal points
         elapsed_time = int(time.time() - start_time)
-        print(f"Elapsed time: {elapsed_time} seconds.")
-
-
-# def create_agents_from(config: SimulationConfig):
-#     agents = []
-#     for agent_config in config.agents:
-#         agent = Agent(agent_config)
-#         agents.append(agent)
-#     return agents
+        print(f"{blue(f"Elapsed time: {elapsed_time} seconds.")}")
 
 
 # # Either agent can decide to end

@@ -23,7 +23,7 @@ class Simulator:
         except asyncio.TimeoutError:
             print(f"{yellow('Simulation ended due to timeout.')}")
         finally:
-            self.network.stop()
+            self.network.stop()            
             print(f"{blue('Simulation finished.')}")
 
         elapsed_time = int(time.time() - start_time)

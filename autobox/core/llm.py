@@ -21,7 +21,7 @@ class LLM:
         self.model = model
         self.system_prompt = system_prompt
         self.tools = tools
-        self.openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
         self.parallel_tool_calls = parallel_tool_calls
 
     def think(self, thinker, messages) -> Tuple[Any, bool, Union[str, None]]:

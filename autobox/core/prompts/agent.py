@@ -1,11 +1,15 @@
-def prompt():
-    return """
+from datetime import datetime, timezone
+
+
+def prompt(backstory: str):
+    return f"""
 <objective>
 You are a smart AI Agent. Your mission is to collaborate with other AI agents to achieve a common goal. You have access to your decision-making process, memory, knowledge, functions and the previous other agent's decisions.
 </objective>
 
 <input>
 1. A final task to be completed collaboratively
+2. Your backstory: {backstory}
 2. Previous partial decisions, suggestions, requirements and more from other agents. When the process to solve the task starts, this value is empty.
 3. Current general task status
 4. Instruction for this stage
@@ -28,7 +32,7 @@ This might be:
     You can accept the terms and the agreement proposed by another agent. This will end the process from your side.
 </actions>
 
-Today's date is ${CURRENT_TIMESTAMP}. Helpful info for decision-making process.
+Today's date is ${datetime.now(timezone.utc).strftime("%Y-%m-%d")}. Helpful info for decision-making process.
 
 <output>
 - Your response should not be more than 50 words.

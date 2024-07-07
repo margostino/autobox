@@ -1,9 +1,10 @@
+import argparse
 import asyncio
 import json
+import os
 
+from autobox.config import load_config
 from autobox.core.agent import Agent
-
-# from autobox.config.loader import load_config
 from autobox.core.llm import LLM
 from autobox.core.messaging import MessageBroker
 from autobox.core.network import Network
@@ -14,49 +15,51 @@ from autobox.core.simulator import Simulator
 
 
 def main():
-    # config = load_config()
+    parser = argparse.ArgumentParser(description='Autobox')
+    parser.add_argument('--config-file', type=str, required=True, default='config.toml', help='Path to the configuration file')
 
-    task = "We need to come up with a bi-collateral agreement to fight Climate Change"
+    args = parser.parse_args()
 
-    file_path = "/Users/martin.dagostino/workspace/margostino/autobox/autobox/core/prompts/tools/agents.json"
+    print(f"Using configuration file: {args.config_file}")
 
-    with open(file_path, "r") as file:
+    config = load_config(args.config_file)
+
+    task = config.task
+
+    file_path = f"{os.environ.get("TOOLS_PATH")}/agents.json"
+
+    with open(file_path, "r", encoding="utf-8") as file:
         tools = json.load(file)
 
     message_broker = MessageBroker()
 
-    sweden_agent = Agent(
-        name="SWEDEN",
-        mailbox=asyncio.Queue(maxsize=10),
-        message_broker=message_broker,
-        llm=LLM(agent_prompt()),
-        task=task,
-    )
-    argentina_agent = Agent(
-        name="ARGENTINA",
-        mailbox=asyncio.Queue(maxsize=10),
-        message_broker=message_broker,
-        llm=LLM(agent_prompt()),
-        task=task,
-    )
+    agents = []
+    agent_ids = {}
+    for agent in config.agents:
+        agent = Agent(
+            name=agent.name,
+            mailbox=asyncio.Queue(maxsize=10),
+            message_broker=message_broker,
+            llm=LLM(agent_prompt(agent.backstory)),
+            task=task,
+        )
+        agent_ids[agent.name] = agent.id
+        agents.append(agent)
+        message_broker.subscribe(agent)
+
     orchestrator = Orchestrator(
         name="ORCHESTRATOR",
         mailbox=asyncio.Queue(maxsize=10),
         message_broker=message_broker,
         llm=LLM(orchestrator_prompt(), tools=tools, parallel_tool_calls=True),
-        agent_ids={
-            sweden_agent.name: sweden_agent.id,
-            argentina_agent.name: argentina_agent.id,
-        },
+        agent_ids=agent_ids,
         task=task,
     )
 
-    message_broker.subscribe(sweden_agent)
-    message_broker.subscribe(argentina_agent)
     message_broker.subscribe(orchestrator)
 
     network = Network(
-        agents=[sweden_agent, argentina_agent],
+        agents=agents,
         orchestrator=orchestrator,
         message_broker=message_broker,
     )

@@ -11,15 +11,6 @@ from autobox.utils import blue, green, spin, yellow
 
 
 class Orchestrator(Agent):
-    name: str
-    mailbox: Queue
-    entry_agent_id: int
-    agents: Dict[int, Agent]
-    message_broker: MessageBroker
-    agent_ids: Dict[str, int]
-    task: str
-    is_initial: bool
-
     def __init__(
         self,
         name: str,
@@ -37,6 +28,7 @@ class Orchestrator(Agent):
         self.agent_ids = agent_ids
         self.agent_names = {value: key for key, value in agent_ids.items()}
         self.is_initial = is_initial
+        self.iterations_counter = 0
 
     async def run(self):        
         print(f"{green(f"Orchestrator {self.name} ({self.id}) is running...")}")
@@ -79,6 +71,7 @@ class Orchestrator(Agent):
         tool_calls = completion.choices[0].message.tool_calls
         reply_messages = []
         if tool_calls is not None and len(tool_calls):
+            self.iterations_counter += 1
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
                 agent_id = self.agent_ids[function_name]
@@ -98,10 +91,6 @@ class Orchestrator(Agent):
                 )
         else:
             self.is_end = True
-            value = completion.choices[0].message.content
-            print(f"{green('Orchestrator is ending process...')}")
-            print(f"{blue(f"Final result: {value}")}")
-
             reply_messages = [
                 Message(
                     to_agent_id=id,
@@ -113,6 +102,16 @@ class Orchestrator(Agent):
 
         for reply_message in reply_messages:
             self.message_broker.publish(reply_message)
+
+        if self.is_end:
+            asyncio.sleep(4)
+            value = completion.choices[0].message.content
+            print(f"{green('Orchestrator is ending process...')}")
+            print('\n\n')
+            print(f"{blue('Total iterations:')} {self.iterations_counter}")
+            print(f"{blue('Final result:')} {value}")
+            print('\n\n')
+
 
     async def start(self, task: str):
         print(f"Orchestrator {self.name} is running...")

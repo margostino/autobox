@@ -1,7 +1,6 @@
 import asyncio
 import json
 from asyncio import Queue
-from typing import List
 
 from openai.types.chat import ChatCompletion
 
@@ -24,16 +23,6 @@ messages = [
 
 
 class Agent:
-    id: int
-    name: str
-    mailbox: Queue
-    message_broker: "MessageBroker"
-    supervisor: "Supervisor"
-    llm: LLM
-    memory: List[str]
-    task: str
-    is_end = False
-
     def __init__(
         self,
         name: str,
@@ -50,6 +39,7 @@ class Agent:
         self.llm = llm
         self.memory = []
         self.task = task
+        self.is_end = False
 
     async def send_reply(self, to_agent_id, completion: ChatCompletion):
         value = completion.choices[0].message.content
@@ -65,6 +55,7 @@ class Agent:
         print(f"{blue(f"Agent {self.name} ({self.id}) handling message from orchestrator...")}")
         to_agent_id = message.from_agent_id
         if message.value == "end":
+            print(f"{blue(f"Agent {self.name} ({self.id}) is stopping...")}")
             self.is_end = True
             return
 

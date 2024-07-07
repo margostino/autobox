@@ -1,0 +1,51 @@
+[simulation]
+max_steps = 150
+task = "We need to come up with a bi-collateral agreement to fight Climate Change."
+
+[[agents]]
+name = "ARGENTINA"
+verbose = true
+backstory = """
+Argentina is a country located in South America, known for its diverse climate, ranging from subtropical in the north to subpolar in the south. It is one of the world’s leading agricultural producers, with vast pampas that support extensive livestock and crop farming. However, Argentina faces significant environmental challenges, including deforestation, soil degradation, and urban pollution. In recent years, the country has been affected by extreme weather events such as floods and droughts, which have intensified due to climate change.
+
+Argentina has a growing awareness and commitment to environmental sustainability. The country is part of the Paris Agreement and has pledged to reduce its greenhouse gas emissions. The Argentine government has implemented policies to promote renewable energy, particularly wind and solar power, and to encourage sustainable agricultural practices. However, economic instability and reliance on fossil fuels remain significant hurdles.
+
+Environmental Initiatives:
+
+	1.	Renewable Energy: Argentina has made substantial investments in renewable energy, particularly wind and solar power, aiming to diversify its energy mix and reduce carbon emissions.
+	2.	Forest Conservation: The country has initiatives aimed at reducing deforestation and promoting reforestation, particularly in the Gran Chaco region.
+	3.	Sustainable Agriculture: Argentina is promoting practices that reduce the environmental impact of agriculture, such as no-till farming and precision agriculture.
+
+Challenges:
+
+	•	Economic instability can hinder long-term environmental investments.
+	•	The agricultural sector’s reliance on traditional farming practices contributes to soil degradation and greenhouse gas emissions.
+	•	Urban pollution and waste management are ongoing concerns.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[[agents]]
+name = "SWEDEN"
+verbose = true
+backstory = """
+Sweden is a Scandinavian country renowned for its commitment to environmental sustainability and its proactive stance on climate change. Sweden is a global leader in renewable energy, with a significant portion of its electricity generated from hydropower, wind power, and bioenergy. The country has set ambitious climate goals, including becoming carbon neutral by 2045. Sweden is also known for its extensive forests, clean water resources, and advanced waste management systems.
+
+The Swedish government has implemented comprehensive environmental policies and regulations aimed at reducing carbon emissions, increasing energy efficiency, and promoting sustainable practices across various sectors. Sweden is actively involved in international climate negotiations and supports global initiatives to combat climate change. The country has a strong tradition of environmental activism and public awareness, with citizens and businesses alike committed to sustainable living.
+
+Environmental Initiatives:
+
+	1.	Carbon Neutrality Goal: Sweden aims to become carbon neutral by 2045, with intermediate targets to reduce emissions by 63% by 2030 compared to 1990 levels.
+	2.	Renewable Energy: The country has made significant investments in renewable energy sources, particularly wind, solar, and bioenergy, and promotes energy efficiency.
+	3.	Circular Economy: Sweden is a pioneer in the circular economy, with advanced recycling systems and policies encouraging the reuse and repurposing of materials.
+
+Challenges:
+
+	•	Balancing industrial growth with environmental sustainability.
+	•	Addressing the environmental impact of transportation, particularly in urban areas.
+	•	Continuing to innovate in renewable energy and waste management to stay ahead of rising demands and environmental pressures.
+"""
+
+[agents.llm]
+model = "gpt-4o"

@@ -1,7 +1,5 @@
 import argparse
 import asyncio
-import json
-import os
 
 from autobox.config import load_config
 from autobox.core.agent import Agent
@@ -11,12 +9,19 @@ from autobox.core.network import Network
 from autobox.core.orchestrator import Orchestrator
 from autobox.core.prompts.agent import prompt as agent_prompt
 from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
+from autobox.core.prompts.tools.agents import get_tools
 from autobox.core.simulator import Simulator
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Autobox')
-    parser.add_argument('--config-file', type=str, required=True, default='config.toml', help='Path to the configuration file')
+    parser = argparse.ArgumentParser(description="Autobox")
+    parser.add_argument(
+        "--config-file",
+        type=str,
+        required=True,
+        default="config.toml",
+        help="Path to the configuration file",
+    )
 
     args = parser.parse_args()
 
@@ -26,15 +31,15 @@ def main():
 
     task = config.task
 
-    file_path = f"{os.environ.get("TOOLS_PATH")}/agents.json"
-
-    with open(file_path, "r", encoding="utf-8") as file:
-        tools = json.load(file)
+    # file_path = f"{os.environ.get("TOOLS_PATH")}/agents.json"
+    # with open(file_path, "r", encoding="utf-8") as file:
+    #     tools = json.load(file)
 
     message_broker = MessageBroker()
 
     agents = []
     agent_ids = {}
+    agent_names = []
     for agent in config.agents:
         agent = Agent(
             name=agent.name,
@@ -45,7 +50,10 @@ def main():
         )
         agent_ids[agent.name] = agent.id
         agents.append(agent)
+        agent_names.append(agent.name)
         message_broker.subscribe(agent)
+
+    tools = get_tools(agent_names)
 
     orchestrator = Orchestrator(
         name="ORCHESTRATOR",

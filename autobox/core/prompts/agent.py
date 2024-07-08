@@ -1,14 +1,14 @@
 from datetime import datetime, timezone
 
 
-def prompt(backstory: str):
+def prompt(task: str, backstory: str):
     return f"""
 <objective>
 You are a smart AI Agent. Your mission is to collaborate with other AI agents to achieve a common goal. You have access to your decision-making process, memory, knowledge, functions and the previous other agent's decisions.
 </objective>
 
 <input>
-1. A final task to be completed collaboratively
+1. A final task to be completed collaboratively: {task}
 2. Your backstory: {backstory}
 2. Previous partial decisions, suggestions, requirements and more from other agents. When the process to solve the task starts, this value is empty.
 3. Current general task status

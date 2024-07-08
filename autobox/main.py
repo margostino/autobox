@@ -45,7 +45,7 @@ def main():
             name=agent.name,
             mailbox=asyncio.Queue(maxsize=10),
             message_broker=message_broker,
-            llm=LLM(agent_prompt(agent.backstory)),
+            llm=LLM(agent_prompt(task, agent.backstory)),
             task=task,
         )
         agent_ids[agent.name] = agent.id
@@ -59,7 +59,7 @@ def main():
         name="ORCHESTRATOR",
         mailbox=asyncio.Queue(maxsize=10),
         message_broker=message_broker,
-        llm=LLM(orchestrator_prompt(), tools=tools, parallel_tool_calls=True),
+        llm=LLM(orchestrator_prompt(task), tools=tools, parallel_tool_calls=True),
         agent_ids=agent_ids,
         task=task,
     )

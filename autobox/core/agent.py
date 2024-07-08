@@ -75,10 +75,6 @@ class Agent:
         chat_completion_messages = [
             {
                 "role": "user",
-                "content": f"Final Task: {self.task}",
-            },
-            {
-                "role": "user",
                 "content": f"Previous partial decisions, suggestions, requirements and more from other agents: {json.dumps(agent_decisions)}",
             },
             {

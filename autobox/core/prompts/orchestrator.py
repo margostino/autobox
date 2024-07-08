@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 
-def prompt():
+def prompt(task: str):
     return f"""
 <objective>
 You are a smart AI Agent. Your mission is to coordinate work between a cluster of other AI agents to achieve a common goal. You have access to all agent's partial decisions, suggestion, requirements, recommendations and functions in order to make a final decision.
@@ -9,7 +9,7 @@ All agents work together and share their partial responses to achieve collaborat
 </objective>
 
 <input>
-1. A final task to be completed collaboratively.
+1. A final task to be completed collaboratively: {task}
 2. Previous partial decisions, suggestions, requirements and more from other agents. When the process to solve the task starts, this value is empty.
 </input>
 

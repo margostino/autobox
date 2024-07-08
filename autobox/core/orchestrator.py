@@ -58,10 +58,6 @@ class Orchestrator(Agent):
         chat_completion_messages = [
             {
                 "role": "user",
-                "content": f"Final Task: {self.task}",
-            },
-            {
-                "role": "user",
                 "content": f"Previous partial decisions, suggestions, requirements and more from other agents: {json.dumps(agent_decisions)}",
             },
         ]
@@ -111,52 +107,6 @@ class Orchestrator(Agent):
             print(f"{blue('Total iterations:')} {self.iterations_counter}")
             print(f"{blue('Final result:')} {value}")
             print('\n\n')
-
-
-    async def start(self, task: str):
-        print(f"Orchestrator {self.name} is running...")
-        while not self.is_end:
-            if not self.mailbox.empty():
-                message = self.mailbox.get_nowait()
-                agent_name = self.agent_ids[message.from_agent_id]
-                self.memory.append(f"{agent_name}: {message.value}")
-                await self.handle_message(message)
-
-            if self.is_initial:
-                self.is_initial = False
-                completion, should_function_call = self.llm.think(
-                    [
-                        {
-                            "role": "user",
-                            "content": f"Final Task: {task}",
-                        },
-                        {
-                            "role": "user",
-                            "content": "Partial status:",
-                        },
-                    ],
-                    parallel_tool_calls=True,
-                )
-
-                if should_function_call:
-                    function_name = completion[0].function.name
-                    agent_id = self.agent_ids[function_name]
-                    arguments = completion[0].function.arguments
-                    message = Message(
-                        to_agent_id=agent_id,
-                        value=json.dumps(
-                            {
-                                "task": task,
-                                "agent_decisions": self.memory,
-                                "arguments": arguments,
-                            }
-                        ),
-                        from_agent_id=self.id,
-                    )
-                    self.message_broker.publish(message)
-                else:
-                    self.is_end = True
-            await asyncio.sleep(1)
 
     def register_agent(self, agent: Agent, is_initial=False):
         agent.supervisor = self

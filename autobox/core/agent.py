@@ -10,18 +10,6 @@ from autobox.utils import blue, green, spin
 
 # from autobox.core.messaging import MessageBroker
 
-messages = [
-    "Hello, I am here to help you",
-    "I am a bot, I can help you with your queries",
-    "I am a player footballer",
-    "I am a player cricketer",
-    "I like computer games",
-    "I wanna be a president",
-    "I am a doctor",
-    "One day I will go to Everest and climb it",
-]
-
-
 class Agent:
     def __init__(
         self,
@@ -52,7 +40,7 @@ class Agent:
         await asyncio.sleep(1)
 
     async def handle_message(self, message: Message):
-        print(f"{blue(f"Agent {self.name} ({self.id}) handling message from orchestrator...")}")
+        print(f"{blue(f"📨 Agent {self.name} ({self.id}) handling message from orchestrator...")}")
         to_agent_id = message.from_agent_id
         if message.value == "end":
             print(f"{blue(f"Agent {self.name} ({self.id}) is stopping...")}")
@@ -66,9 +54,9 @@ class Agent:
         instruction = arguments["instruction"]
         thinking_process = arguments["thinking_process"]
 
-        print(f"{blue(f'Instruction for Agent {self.name} ({self.id}):')} {instruction}")
-        print(f"{blue(f'Current task status {self.name} ({self.id}):')} {task_status}")
-        print(f"{blue(f'Thinking process {self.name} ({self.id}):')} {thinking_process}")
+        print(f"{blue(f'📜 Instruction for Agent {self.name} ({self.id}):')} {instruction}")
+        print(f"{blue(f'📊 urrent task status {self.name} ({self.id}):')} {task_status}")
+        print(f"{blue(f'💭 Thinking process {self.name} ({self.id}):')} {thinking_process}")
 
         self.memory.append(agent_decisions)
 
@@ -98,7 +86,7 @@ class Agent:
         self.message_broker.publish(reply_message)
 
     async def run(self):
-        print(f"{green(f"Agent {self.name} ({self.id}) is running...")}")
+        print(f"{green(f"✅ Agent {self.name} ({self.id}) is running")}")
         while not self.is_end:
             if not self.mailbox.empty():
                 message = self.mailbox.get_nowait()

@@ -11,9 +11,12 @@ from autobox.core.prompts.agent import prompt as agent_prompt
 from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
 from autobox.core.prompts.tools.agents import get_tools
 from autobox.core.simulator import Simulator
+from autobox.logger.logger import print_banner
 
 
 def main():
+    print_banner()
+
     parser = argparse.ArgumentParser(description="Autobox")
     parser.add_argument(
         "--config-file",
@@ -31,10 +34,6 @@ def main():
 
     task = config.task
 
-    # file_path = f"{os.environ.get("TOOLS_PATH")}/agents.json"
-    # with open(file_path, "r", encoding="utf-8") as file:
-    #     tools = json.load(file)
-
     message_broker = MessageBroker()
 
     agents = []
@@ -43,7 +42,7 @@ def main():
     for agent in config.agents:
         agent = Agent(
             name=agent.name,
-            mailbox=asyncio.Queue(maxsize=10),
+            mailbox=asyncio.Queue(maxsize=agent.mailbox["max_size"]),
             message_broker=message_broker,
             llm=LLM(agent_prompt(task, agent.backstory)),
             task=task,
@@ -56,8 +55,8 @@ def main():
     tools = get_tools(agent_names)
 
     orchestrator = Orchestrator(
-        name="ORCHESTRATOR",
-        mailbox=asyncio.Queue(maxsize=10),
+        name=config.orchestrator["name"],
+        mailbox=asyncio.Queue(maxsize=config.orchestrator["mailbox"]["max_size"]),
         message_broker=message_broker,
         llm=LLM(orchestrator_prompt(task), tools=tools, parallel_tool_calls=True),
         agent_ids=agent_ids,

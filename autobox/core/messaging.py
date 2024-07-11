@@ -1,6 +1,6 @@
 from autobox.core.agent import Agent
 from autobox.core.mail import Message
-from autobox.utils import blue, red
+from autobox.utils import green, red
 
 
 class MessageBroker:
@@ -9,7 +9,7 @@ class MessageBroker:
         self.subscribers = {}
 
     def subscribe(self, agent: Agent):
-        print(f"{blue(f"Agent {agent.name} ({agent.id}) subscribed to message broker")}")
+        print(f"{green(f"✅ Agent {agent.name} ({agent.id}) subscribed to message broker")}")
         self.subscribers[agent.id] = agent
 
     def publish(self, message: Message):

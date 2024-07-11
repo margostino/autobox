@@ -35,4 +35,4 @@ class Network:
     def stop(self):
         for agent in self.agents:
             agent.running = False
-        print(f"{blue('Network stopped.')}")
+        print(f"{blue('🛑 Network stopped.')}")

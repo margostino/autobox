@@ -1,5 +1,7 @@
 # ⚡️ Autobox
 
+⚠️ **DISCLAIMER**: This project is a work in progress.
+
 **AUTOBOX** is a simulation framework designed to automate decision-making processes by orchestrating AI agents using the Actor model. These agents possess memory (short-term and long-term), a “brain” using Large Language Models (LLMs), tools to perform actions, and a means to interact with the environment. The core component, called the Orchestrator, manages the agents, their interactions, and the environment to achieve defined tasks efficiently and effectively.
 
 In **AUTOBOX**, the Actor model is used to manage concurrency and communication between the Orchestrator and the AI agents. Each component (Orchestrator and agents) is implemented as an actor, allowing them to operate independently and communicate asynchronously.

@@ -40,12 +40,13 @@ class Agent:
         await asyncio.sleep(1)
 
     async def handle_message(self, message: Message):
-        print(f"{blue(f"📨 Agent {self.name} ({self.id}) handling message from orchestrator...")}")
         to_agent_id = message.from_agent_id
         if message.value == "end":
             print(f"{blue(f"Agent {self.name} ({self.id}) is stopping...")}")
             self.is_end = True
             return
+
+        print(f"{blue(f"📨 Agent {self.name} ({self.id}) handling message from orchestrator...")}")
 
         json_message_value = json.loads(message.value)
         agent_decisions = json_message_value["agent_decisions"]
@@ -55,7 +56,7 @@ class Agent:
         thinking_process = arguments["thinking_process"]
 
         print(f"{blue(f'📜 Instruction for Agent {self.name} ({self.id}):')} {instruction}")
-        print(f"{blue(f'📊 urrent task status {self.name} ({self.id}):')} {task_status}")
+        print(f"{blue(f'📊 rt task status {self.name} ({self.id}):')} {task_status}")
         print(f"{blue(f'💭 Thinking process {self.name} ({self.id}):')} {thinking_process}")
 
         self.memory.append(agent_decisions)

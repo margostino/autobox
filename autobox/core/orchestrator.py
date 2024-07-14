@@ -34,7 +34,7 @@ class Orchestrator(Agent):
         self.iterations_counter = 0
 
     async def run(self):
-        print(f"{green(f"✅ Orchestrator {self.name} ({self.id}) is running")}")
+        print(f"{green(f"🟢 Orchestrator {self.name} ({self.id}) is running")}")
         # TODO: ack agents?
 
         if self.is_initial:

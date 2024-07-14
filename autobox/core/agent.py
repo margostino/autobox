@@ -56,7 +56,7 @@ class Agent:
         thinking_process = arguments["thinking_process"]
 
         print(f"{blue(f'📜 Instruction for Agent {self.name} ({self.id}):')} {instruction}")
-        print(f"{blue(f'📊 rt task status {self.name} ({self.id}):')} {task_status}")
+        print(f"{blue(f'📊 r task status {self.name} ({self.id}):')} {task_status}")
         print(f"{blue(f'💭 Thinking process {self.name} ({self.id}):')} {thinking_process}")
 
         self.memory.append(agent_decisions)
@@ -87,7 +87,7 @@ class Agent:
         self.message_broker.publish(reply_message)
 
     async def run(self):
-        print(f"{green(f"✅ Agent {self.name} ({self.id}) is running")}")
+        print(f"{green(f"🟢 Agent {self.name} ({self.id}) is running")}")
         while not self.is_end:
             if not self.mailbox.empty():
                 message = self.mailbox.get_nowait()

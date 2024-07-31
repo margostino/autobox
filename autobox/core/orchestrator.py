@@ -1,7 +1,7 @@
 import asyncio
 import json
 from asyncio import Queue
-from typing import Callable, Dict
+from typing import Dict
 
 from openai.types.chat import ChatCompletion
 
@@ -120,12 +120,6 @@ class Orchestrator(Agent):
     def send(self, message: Message):
         self.message_broker.publish(message)
 
-    @staticmethod
-    def handle_spin_completion2(fn: Callable[[ChatCompletion], str]) -> Callable[[ChatCompletion], str]:
-        def inner(chat_completion: ChatCompletion) -> str:
-            return fn(chat_completion)
-        return inner
-    
     @staticmethod
     def handle_spin_completion(chat_completion: ChatCompletion) -> str:
         message, should_call_tools = extract_chat_completion(chat_completion)

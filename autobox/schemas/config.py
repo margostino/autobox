@@ -2,8 +2,7 @@ from typing import List, Optional
 
 
 class MailBoxConfig:
-    def __init__(self, name: str, max_size: int):
-        self.name = name
+    def __init__(self, max_size: int):
         self.max_size = max_size
 
 

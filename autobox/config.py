@@ -1,14 +1,20 @@
 import tomllib
 
-from autobox.schemas.config import AgentConfig, LLMConfig, SimulationConfig
+from autobox.schemas.simulation_request import (
+    AgentConfig,
+    LLMConfig,
+    SimulationConfig,
+    SimulationRequest,
+)
 
 
-def load_config(file_path: str) -> SimulationConfig:
+def load_config(file_path: str) -> SimulationRequest:
     with open(file_path, "rb") as f:
         config = tomllib.load(f)
         orchestrator = config.get("orchestrator", {})
         simulation_config = config.get("simulation", {})
         max_steps = simulation_config.get("max_steps", 0)
+        timeout = simulation_config.get("timeout", 0)
         task = simulation_config.get("task", "")
 
         agents = []
@@ -28,11 +34,12 @@ def load_config(file_path: str) -> SimulationConfig:
             )
             agents.append(agent)
 
-        simulation = SimulationConfig(
-            max_steps=max_steps,
-            task=task,
+        simulation = SimulationConfig(max_steps=max_steps, timeout=timeout, task=task)
+
+        autobox_config = SimulationRequest(
+            simulation=simulation,
             agents=agents,
             orchestrator=orchestrator,
         )
 
-        return simulation
+        return autobox_config

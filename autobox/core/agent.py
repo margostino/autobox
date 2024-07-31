@@ -56,7 +56,7 @@ class Agent:
         thinking_process = arguments["thinking_process"]
 
         print(f"{blue(f'📜 Instruction for Agent {self.name} ({self.id}):')} {instruction}")
-        print(f"{blue(f'📊 r task status {self.name} ({self.id}):')} {task_status}")
+        print(f"{blue(f'📊 Task status {self.name} ({self.id}):')} {task_status}")
         print(f"{blue(f'💭 Thinking process {self.name} ({self.id}):')} {thinking_process}")
 
         self.memory.append(agent_decisions)

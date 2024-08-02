@@ -1,6 +1,6 @@
 import tomllib
 
-from autobox.schemas.simulation_request import (
+from autobox.schemas.simulation import (
     AgentConfig,
     LLMConfig,
     SimulationConfig,

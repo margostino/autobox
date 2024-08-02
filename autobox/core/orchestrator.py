@@ -9,8 +9,13 @@ from autobox.core.agent import Agent
 from autobox.core.llm import LLM
 from autobox.core.mail import Message
 from autobox.core.messaging import MessageBroker
-from autobox.utils import (blue, extract_chat_completion, green,
-                           spin_with_handler, yellow)
+from autobox.utils import (
+    blue,
+    extract_chat_completion,
+    green,
+    spin_with_handler,
+    yellow,
+)
 
 
 class Orchestrator(Agent):
@@ -25,11 +30,11 @@ class Orchestrator(Agent):
         message_broker: MessageBroker,
         llm: LLM,
         worker_ids: Dict[str, int],
-        task: str,        
+        task: str,
     ):
         super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task)
         self.worker_ids = worker_ids
-        self.worker_names = {value: key for key, value in worker_ids.items()}        
+        self.worker_names = {value: key for key, value in worker_ids.items()}
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:
@@ -50,7 +55,7 @@ class Orchestrator(Agent):
         ]
 
         completion = spin_with_handler(f"🧠 Orchestrator {self.name} ({self.id}) is thinking...", Orchestrator.handle_spin_completion, lambda: self.llm.think(self.name, chat_completion_messages))
-        
+
         tool_calls = completion.choices[0].message.tool_calls
         reply_messages = []
         if tool_calls is not None and len(tool_calls):
@@ -104,5 +109,5 @@ class Orchestrator(Agent):
 
         if not should_call_tools:
             return "Do not need more iterations. Task is done."
-        
+
         return f"Orchestrator decided to call tools: {[message['function_name'] for message in message]}"

@@ -2,6 +2,8 @@ from typing import List
 
 from pydantic import BaseModel
 
+from autobox.core.simulator import Simulator
+
 
 class MailboxConfig(BaseModel):
     max_size: int
@@ -34,3 +36,16 @@ class SimulationRequest(BaseModel):
     simulation: SimulationConfig
     orchestrator: OrchestratorConfig
     agents: List[AgentConfig]
+
+
+class SimulationStatus(BaseModel):
+    simulation_id: str
+    status: str
+    details: SimulationRequest
+    simulation: Simulator = None
+
+
+class SimulationStatusResponse(BaseModel):
+    simulation_id: str
+    status: str
+    details: SimulationRequest

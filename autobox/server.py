@@ -5,25 +5,14 @@ from uuid import uuid4
 from venv import logger
 
 from fastapi import BackgroundTasks, FastAPI
-from pydantic import BaseModel
 
-from autobox.core.simulator import Simulator, prepare_simulation
+from autobox.core.simulator import prepare_simulation
 from autobox.logger.logger import print_banner
-from autobox.schemas.simulation_request import SimulationRequest
-
-
-class SimulationStatus(BaseModel):
-    simulation_id: str
-    status: str
-    details: SimulationRequest
-    simulation: Simulator = None
-
-
-class SimulationStatusResponse(BaseModel):
-    simulation_id: str
-    status: str
-    details: SimulationRequest
-
+from autobox.schemas.simulation import (
+    SimulationRequest,
+    SimulationStatus,
+    SimulationStatusResponse,
+)
 
 running_simulations: Dict[str, SimulationStatus] = {}
 simulations_lock = asyncio.Lock()
@@ -42,27 +31,6 @@ async def update_simulation_status(simulation_id: str, status: str):
         if simulation_status is not None:
             simulation_status.status = status
     return simulation_status
-
-
-@app.get("/simulations", response_model=List[SimulationStatusResponse])
-async def get_simulations():
-    async with simulations_lock:
-        simulations = [
-            simulation_status for _, simulation_status in running_simulations.items()
-        ]
-
-    simulation_response = [
-        SimulationStatusResponse(**simulation.dict(exclude={"simulation"}))
-        for simulation in simulations
-    ]
-    return simulation_response
-
-
-@app.post("/simulations/{simulation_id}/abort")
-async def abort_simulation(simulation_id: str):
-    simulation_status = await update_simulation_status(simulation_id, "aborted")
-    simulation_status.simulation.abort()
-    return {"simulation_id": simulation_id, "status": "aborted"}
 
 
 async def run_simulation_task(simulation_id: str, request: SimulationRequest):
@@ -89,6 +57,30 @@ def run_async_in_thread(async_func, *args):
     asyncio.set_event_loop(loop)
     loop.run_until_complete(async_func(*args))
     loop.close()
+
+
+### ROUTES ###
+
+
+@app.get("/simulations", response_model=List[SimulationStatusResponse])
+async def get_simulations():
+    async with simulations_lock:
+        simulations = [
+            simulation_status for _, simulation_status in running_simulations.items()
+        ]
+
+    simulation_response = [
+        SimulationStatusResponse(**simulation.dict(exclude={"simulation"}))
+        for simulation in simulations
+    ]
+    return simulation_response
+
+
+@app.post("/simulations/{simulation_id}/abort")
+async def abort_simulation(simulation_id: str):
+    simulation_status = await update_simulation_status(simulation_id, "aborted")
+    simulation_status.simulation.abort()
+    return {"simulation_id": simulation_id, "status": "aborted"}
 
 
 @app.post("/simulations")

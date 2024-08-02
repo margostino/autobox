@@ -1,8 +1,8 @@
 import argparse
 import asyncio
 
+from autobox.common.logger import print_banner
 from autobox.core.simulator import prepare_simulation
-from autobox.logger.logger import print_banner
 from autobox.utils import load_config
 
 

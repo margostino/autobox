@@ -1,71 +1,21 @@
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List
+from typing import List
 from uuid import uuid4
-from venv import logger
 
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 
-from autobox.core.simulation import prepare_simulation
-from autobox.logger.logger import print_banner
-from autobox.schemas.simulation import (
-    SimulationRequest,
-    SimulationStatus,
-    SimulationStatusResponse,
-)
+from autobox.cache.simulation import SimulationCache
+from autobox.common.logger import print_banner
+from autobox.runner.event_loop import EventLoop
+from autobox.schemas.simulation import SimulationRequest, SimulationStatusResponse
 
-running_simulations: Dict[str, SimulationStatus] = {}
-simulations_lock = asyncio.Lock()
+cache = SimulationCache()
 app = FastAPI()
-
-
-async def get_simulation_status(simulation_id: str):
-    async with simulations_lock:
-        simulation_status = running_simulations.get(simulation_id)
-    return simulation_status
-
-
-async def update_simulation_status(simulation_id: str, status: str):
-    async with simulations_lock:
-        simulation_status = running_simulations.get(simulation_id)
-        if simulation_status is not None:
-            simulation_status.status = status
-    return simulation_status
-
-
-async def run_simulation_task(simulation_id: str, request: SimulationRequest):
-    try:
-        simulation = prepare_simulation(request)
-        async with simulations_lock:
-            running_simulations[simulation_id] = SimulationStatus(
-                simulation_id=simulation_id,
-                status="in progress",
-                details=request,
-                simulation=simulation,
-            )
-        await simulation.run(timeout=request.simulation.timeout)
-        simulation_status = await get_simulation_status(simulation_id)
-        if simulation_status.status != "aborted":
-            await update_simulation_status(simulation_id, "completed")
-    except Exception as e:
-        logger.error("Error preparing simulation: %s", e)
-        await update_simulation_status(simulation_id, "failed")
-
-
-def run_async_in_thread(async_func, *args):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(async_func(*args))
-    loop.close()
 
 
 @app.get("/simulations", response_model=List[SimulationStatusResponse])
 async def get_simulations():
-    async with simulations_lock:
-        simulations = [
-            simulation_status for _, simulation_status in running_simulations.items()
-        ]
-
+    simulations = await cache.get_all_simulations()
     simulation_response = [
         SimulationStatusResponse(**simulation.dict(exclude={"simulation"}))
         for simulation in simulations
@@ -75,9 +25,12 @@ async def get_simulations():
 
 @app.post("/simulations/{simulation_id}/abort")
 async def abort_simulation(simulation_id: str):
-    simulation_status = await update_simulation_status(simulation_id, "aborted")
-    simulation_status.simulation.abort()
-    return {"simulation_id": simulation_id, "status": "aborted"}
+    simulation_status = await cache.update_simulation_status(simulation_id, "aborted")
+    if simulation_status is not None:
+        simulation_status.simulation.abort()
+        return {"simulation_id": simulation_id, "status": "aborted"}
+    else:
+        raise HTTPException(status_code=404, detail="simulation not found")
 
 
 @app.post("/simulations")
@@ -87,13 +40,9 @@ async def post_simulations(
     simulation_id = str(uuid4())
     executor = ThreadPoolExecutor(max_workers=1)
 
-    background_tasks.add_task(
-        executor.submit,
-        run_async_in_thread,
-        run_simulation_task,
-        simulation_id,
-        request,
-    )
+    event_loop = EventLoop(simulation_id=simulation_id, cache=cache, request=request)
+
+    background_tasks.add_task(executor.submit, event_loop.run)
 
     # loop = asyncio.get_event_loop()
     # loop.run_in_executor(executor, run_async_in_thread, run_simulation_task, request)

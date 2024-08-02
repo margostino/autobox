@@ -1,6 +1,7 @@
+import datetime
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from autobox.core.simulator import Simulator
 
@@ -42,10 +43,20 @@ class SimulationStatus(BaseModel):
     simulation_id: str
     status: str
     details: SimulationRequest
-    simulation: Simulator = None
+    started_at: datetime
+    finished_at: datetime = Field(default=None)
+    simulation: Simulator = Field(default=None)
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SimulationStatusResponse(BaseModel):
     simulation_id: str
     status: str
     details: SimulationRequest
+    started_at: datetime
+    finished_at: datetime = Field(default=None)
+
+    class Config:
+        arbitrary_types_allowed = True

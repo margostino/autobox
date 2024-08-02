@@ -1,9 +1,9 @@
 import argparse
 import asyncio
 
-from autobox.config import load_config
 from autobox.core.simulator import prepare_simulation
 from autobox.logger.logger import print_banner
+from autobox.utils import load_config
 
 
 def main():

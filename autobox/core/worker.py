@@ -1,8 +1,8 @@
 import json
 
 from autobox.core.agent import Agent
-from autobox.core.mail import Message
-from autobox.utils import blue, spin
+from autobox.schemas.message import Message
+from autobox.utils.console import blue, spin
 
 
 class Worker(Agent):

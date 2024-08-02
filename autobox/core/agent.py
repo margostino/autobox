@@ -6,12 +6,12 @@ from typing import Any, List
 from pydantic import BaseModel, Field, model_validator
 
 from autobox.core.llm import LLM
-from autobox.core.mail import Message
 from autobox.core.messaging import MessageBroker
-from autobox.utils import green
+from autobox.schemas.message import Message
+from autobox.utils.console import green
 
 
-class Agent(BaseModel, ABC):    
+class Agent(BaseModel, ABC):
     name: str
     mailbox: Queue
     message_broker: MessageBroker

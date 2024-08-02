@@ -6,7 +6,7 @@ from venv import logger
 
 from fastapi import BackgroundTasks, FastAPI
 
-from autobox.core.simulator import prepare_simulation
+from autobox.core.simulation import prepare_simulation
 from autobox.logger.logger import print_banner
 from autobox.schemas.simulation import (
     SimulationRequest,
@@ -57,9 +57,6 @@ def run_async_in_thread(async_func, *args):
     asyncio.set_event_loop(loop)
     loop.run_until_complete(async_func(*args))
     loop.close()
-
-
-### ROUTES ###
 
 
 @app.get("/simulations", response_model=List[SimulationStatusResponse])

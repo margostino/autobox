@@ -7,15 +7,10 @@ from openai.types.chat import ChatCompletion
 
 from autobox.core.agent import Agent
 from autobox.core.llm import LLM
-from autobox.core.mail import Message
 from autobox.core.messaging import MessageBroker
-from autobox.utils import (
-    blue,
-    extract_chat_completion,
-    green,
-    spin_with_handler,
-    yellow,
-)
+from autobox.schemas.message import Message
+from autobox.utils.console import blue, green, spin_with_handler, yellow
+from autobox.utils.llm import extract_chat_completion
 
 
 class Orchestrator(Agent):

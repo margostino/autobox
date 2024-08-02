@@ -3,8 +3,8 @@ from typing import Dict
 
 from pydantic import BaseModel
 
-from autobox.core.mail import Message
-from autobox.utils import green, red
+from autobox.schemas.message import Message
+from autobox.utils.console import green, red
 
 
 class MessageBroker(BaseModel):

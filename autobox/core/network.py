@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 from autobox.core.agent import Agent
 from autobox.core.messaging import MessageBroker
-from autobox.utils import blue
+from autobox.schemas.message import Message
+from autobox.utils.console import blue
 
 
 class Network(BaseModel):
@@ -17,6 +18,9 @@ class Network(BaseModel):
         self.workers.append(worker)
 
     async def run(self):
+        self.message_broker.publish(
+            Message(value=None, to_agent_id=self.orchestrator.id)
+        )
         tasks = [asyncio.create_task(self.orchestrator.run())] + [
             asyncio.create_task(worker.run()) for worker in self.workers
         ]

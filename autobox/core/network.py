@@ -1,38 +1,29 @@
 import asyncio
 from typing import List
 
+from pydantic import BaseModel
+
 from autobox.core.agent import Agent
 from autobox.core.messaging import MessageBroker
-from autobox.core.orchestrator import Orchestrator
 from autobox.utils import blue
 
 
-class Network:
+class Network(BaseModel):
     message_broker: MessageBroker
-    agents: List[Agent]
-    orchestrator: Orchestrator
+    workers: List[Agent]
+    orchestrator: Agent
 
-    def __init__(
-        self,
-        agents: List[Agent],
-        orchestrator: Orchestrator,
-        message_broker: MessageBroker,
-    ):
-        self.agents = agents
-        self.message_broker = message_broker
-        self.orchestrator = orchestrator
-
-    def register_agent(self, agent: Agent):
-        self.agents.append(agent)
+    def register_agent(self, worker: Agent):
+        self.workers.append(worker)
 
     async def run(self):
-        # Start agents
         tasks = [asyncio.create_task(self.orchestrator.run())] + [
-            asyncio.create_task(agent.run()) for agent in self.agents
+            asyncio.create_task(worker.run()) for worker in self.workers
         ]
         await asyncio.gather(*tasks)
 
     def stop(self):
-        for agent in self.agents:
-            agent.running = False
+        for worker in self.workers:
+            worker.is_end = True
+        self.orchestrator.is_end = True
         print(f"{blue('🔴 Network stopped.')}")

@@ -14,45 +14,28 @@ from autobox.utils import (blue, extract_chat_completion, green,
 
 
 class Orchestrator(Agent):
+    worker_ids: Dict[str, int] = {}
+    worker_names: Dict[int, str] = {}
+    iterations_counter: int = 0
+
     def __init__(
         self,
         name: str,
         mailbox: Queue,
         message_broker: MessageBroker,
         llm: LLM,
-        agent_ids: Dict[str, int],
-        task: str,
-        is_initial=True,
+        worker_ids: Dict[str, int],
+        task: str,        
     ):
-        super().__init__(name, mailbox, message_broker, llm, task)
-        self.entry_agent_id = None
-        self.agents = {}
-        self.mailbox = Queue(maxsize=10 * 2)
-        self.agent_ids = agent_ids
-        self.agent_names = {value: key for key, value in agent_ids.items()}
-        self.is_initial = is_initial
-        self.iterations_counter = 0
-
-    async def run(self):
-        print(f"{green(f"🟢 Orchestrator {self.name} ({self.id}) is running")}")
-        # TODO: ack agents?
-
-        if self.is_initial:
-            self.is_initial = False
-            print(f"{blue(f"📋 Task: {self.task}")}")
-            await self.handle_message(Message(value=None))
-
-        while not self.is_end:
-            if not self.mailbox.empty():
-                message = self.mailbox.get_nowait()
-                await self.handle_message(message)
-            await asyncio.sleep(1)
+        super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task)
+        self.worker_ids = worker_ids
+        self.worker_names = {value: key for key, value in worker_ids.items()}        
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:
             print(f"{blue(f"📬 Orchestrator {self.name} ({self.id}) preparing initial message...")}")
         else:
-            from_agent_name = self.agent_names[message.from_agent_id]
+            from_agent_name = self.worker_names[message.from_agent_id]
             print(f"{blue(f"📨 Orchestrator {self.name} ({self.id}) handling message from {from_agent_name}...")}")
             print(f"{yellow(f"🗣️ {from_agent_name} said:")} {message.value}")
             self.memory.append(f"{from_agent_name} said: {message.value}")
@@ -74,7 +57,7 @@ class Orchestrator(Agent):
             self.iterations_counter += 1
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                agent_id = self.agent_ids[function_name]
+                agent_id = self.worker_ids[function_name]
                 arguments = tool_call.function.arguments
                 reply_messages.append(
                     Message(
@@ -97,7 +80,7 @@ class Orchestrator(Agent):
                     value="end",
                     from_agent_id=self.id,
                 )
-                for id in self.agent_ids.values()
+                for id in self.worker_ids.values()
             ]
 
         for reply_message in reply_messages:
@@ -111,11 +94,6 @@ class Orchestrator(Agent):
             print(f"{blue('🔄 Total iterations:')} {self.iterations_counter}")
             print(f"{blue('🏁 Final result:')} {value}")
             print('\n\n')
-
-    def register_agent(self, agent: Agent, is_initial=False):
-        agent.supervisor = self
-        self.agents[agent.id] = agent
-        self.entry_agent_id = agent.id if is_initial else self.entry_agent_id
 
     def send(self, message: Message):
         self.message_broker.publish(message)

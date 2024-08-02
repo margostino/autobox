@@ -1,89 +1,41 @@
 import asyncio
-import json
+from abc import ABC, abstractmethod
 from asyncio import Queue
+from typing import Any, List
 
-from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, Field, model_validator
 
 from autobox.core.llm import LLM
 from autobox.core.mail import Message
-from autobox.utils import blue, green, spin
+from autobox.core.messaging import MessageBroker
+from autobox.utils import green
 
 
-class Agent:
-    def __init__(
-        self,
-        name: str,
-        mailbox: Queue,
-        message_broker: "MessageBroker",
-        llm: LLM,
-        task: str,
-    ):
-        self.id = hash(name) % 1000
-        self.name = name
-        self.running = True
-        self.mailbox = mailbox
-        self.message_broker = message_broker
-        self.llm = llm
-        self.memory = []
-        self.task = task
-        self.is_end = False
+class Agent(BaseModel, ABC):    
+    name: str
+    mailbox: Queue
+    message_broker: MessageBroker
+    llm: LLM
+    task: str
+    memory: List[Any] = []
+    id: int = Field(init=False)
+    is_end: bool = False
 
-    async def send_reply(self, to_agent_id, completion: ChatCompletion):
-        value = completion.choices[0].message.content
-        reply_message = Message(
-            to_agent_id=to_agent_id,
-            value=value,
-            from_agent_id=self.id,
-        )
-        self.message_broker.publish(reply_message)
-        await asyncio.sleep(1)
+    @model_validator(mode="before")
+    @classmethod
+    def set_id(cls, values):
+        name = values.get("name")
+        if name is None:
+            raise ValueError("name must be set")
+        values["id"] = hash(name) % 1000
+        return values
 
+    class Config:
+        arbitrary_types_allowed = True
+
+    @abstractmethod
     async def handle_message(self, message: Message):
-        to_agent_id = message.from_agent_id
-        if message.value == "end":
-            print(f"{blue(f"Agent {self.name} ({self.id}) is stopping...")}")
-            self.is_end = True
-            return
-
-        print(f"{blue(f"📨 Agent {self.name} ({self.id}) handling message from orchestrator...")}")
-
-        json_message_value = json.loads(message.value)
-        agent_decisions = json_message_value["agent_decisions"]
-        arguments = json.loads(json_message_value["arguments"])
-        task_status = arguments["task_status"]
-        instruction = arguments["instruction"]
-        thinking_process = arguments["thinking_process"]
-
-        print(f"{blue(f'📜 Instruction for Agent {self.name} ({self.id}):')} {instruction}")
-        print(f"{blue(f'📊 Task status {self.name} ({self.id}):')} {task_status}")
-        print(f"{blue(f'💭 Thinking process {self.name} ({self.id}):')} {thinking_process}")
-
-        self.memory.append(agent_decisions)
-
-        chat_completion_messages = [
-            {
-                "role": "user",
-                "content": f"Previous partial decisions, suggestions, requirements and more from other agents: {json.dumps(agent_decisions)}",
-            },
-            {
-                "role": "user",
-                "content": f"Current general task status: {task_status}",
-            },
-            {
-                "role": "user",
-                "content": f"Instruction: {instruction}",
-            },
-        ]
-
-        completion = spin(f"Agent {self.name} ({self.id}) is thinking...", lambda: self.llm.think(self.name, chat_completion_messages))
-
-        value = completion.choices[0].message.content
-        reply_message = Message(
-            to_agent_id=to_agent_id,
-            value=value,
-            from_agent_id=self.id,
-        )
-        self.message_broker.publish(reply_message)
+        pass
 
     async def run(self):
         print(f"{green(f"🟢 Agent {self.name} ({self.id}) is running")}")

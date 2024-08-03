@@ -12,6 +12,7 @@ class Worker(Agent):
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:
+            print(f"{blue(f'👩‍💻 Human instructed agent {self.name} ({self.id}) with instruction: {message.value}')}")
             self.human_instruction = message.value
             return
 

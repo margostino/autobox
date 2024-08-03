@@ -39,6 +39,10 @@ class SimulationRequest(BaseModel):
     agents: List[AgentConfig]
 
 
+class InstructionRequest(BaseModel):
+    instruction: str
+
+
 class SimulationStatus(BaseModel):
     simulation_id: str
     status: str

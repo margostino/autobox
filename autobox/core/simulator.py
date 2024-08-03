@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from autobox.core.network import Network
 from autobox.utils.console import blue, green, yellow
@@ -9,15 +9,16 @@ from autobox.utils.console import blue, green, yellow
 
 class Simulator(BaseModel):
     network: Network
+    timeout: int = Field(default=120)
 
-    async def run(self, timeout: int = 120):
+    async def run(self):
         print(f"{green('✅ Autobox is running')}")
         start_time = time.time()
 
         task = asyncio.create_task(self.network.run())
 
         try:
-            await asyncio.wait_for(task, timeout=timeout)
+            await asyncio.wait_for(task, timeout=self.timeout)
         except asyncio.TimeoutError:
             print(f"{yellow('Simulation ended due to timeout.')}")
         finally:

@@ -5,35 +5,32 @@ from datetime import datetime
 from openai import BaseModel
 
 from autobox.cache.simulation import SimulationCache
-from autobox.core.simulation import prepare_simulation
-from autobox.schemas.simulation import SimulationRequest
+from autobox.core.simulator import Simulator
 
 
 class EventLoop(BaseModel):
     simulation_id: str
     cache: SimulationCache
-    request: SimulationRequest
+    simulation: Simulator
 
     def run(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.start_simulation(self.simulation_id, self.request))
+        loop.run_until_complete(self.start_simulation())
         loop.close()
 
-    async def start_simulation(self, simulation_id: str, request: SimulationRequest):
+    async def start_simulation(self):
         try:
-            simulation = prepare_simulation(request)
-            await self.cache.init_simulation(
-                simulation_id, "in progress", request, simulation
+            await self.simulation.run()
+            simulation_status = await self.cache.get_simulation_status(
+                self.simulation_id
             )
-            await simulation.run(timeout=request.simulation.timeout)
-            simulation_status = await self.cache.get_simulation_status(simulation_id)
             if simulation_status.status != "aborted":
                 await self.cache.update_simulation_status(
-                    simulation_id, "completed", datetime.now()
+                    self.simulation_id, "completed", datetime.now()
                 )
         except Exception as e:
-            logger.error("Error preparing simulation: %s", e)
+            logger.error("Error running simulation: %s", e)
             await self.cache.update_simulation_status(
-                simulation_id, "failed", datetime.now()
+                self.simulation_id, "failed", datetime.now()
             )

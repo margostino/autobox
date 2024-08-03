@@ -31,3 +31,6 @@ class Network(BaseModel):
             worker.is_end = True
         self.orchestrator.is_end = True
         print(f"{blue('🔴 Network stopped.')}")
+
+    def send_intruction_for_workers(self, agent_id: int, instruction: str):
+        self.message_broker.publish(Message(value=instruction, to_agent_id=agent_id))

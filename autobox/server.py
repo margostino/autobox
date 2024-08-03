@@ -1,13 +1,20 @@
+from asyncio.log import logger
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from typing import List
 from uuid import uuid4
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
 
 from autobox.cache.simulation import SimulationCache
 from autobox.common.logger import print_banner
+from autobox.core.simulation import prepare_simulation
 from autobox.runner.event_loop import EventLoop
-from autobox.schemas.simulation import SimulationRequest, SimulationStatusResponse
+from autobox.schemas.simulation import (
+    InstructionRequest,
+    SimulationRequest,
+    SimulationStatusResponse,
+)
 
 cache = SimulationCache()
 app = FastAPI()
@@ -33,21 +40,50 @@ async def abort_simulation(simulation_id: str):
         raise HTTPException(status_code=404, detail="simulation not found")
 
 
+@app.post("/simulations/{simulation_id}/agents/{agent_id}/instruction")
+async def update_simulation_instruction(
+    simulation_id: str, agent_id: str, request: InstructionRequest
+):
+    simulation_status = await cache.get_simulation_status(simulation_id)
+    if simulation_status is None:
+        raise HTTPException(status_code=404, detail="simulation not found")
+    # TODO: validate if agent_id exists
+    simulation_status.simulation.network.send_intruction_for_workers(
+        agent_id=int(agent_id), instruction=request.instruction
+    )
+    return
+
+
 @app.post("/simulations")
 async def post_simulations(
-    request: SimulationRequest, background_tasks: BackgroundTasks
+    request: SimulationRequest, background_tasks: BackgroundTasks, response: Response
 ):
     simulation_id = str(uuid4())
-    executor = ThreadPoolExecutor(max_workers=1)
 
-    event_loop = EventLoop(simulation_id=simulation_id, cache=cache, request=request)
+    try:
+        simulation = prepare_simulation(request)
+        await cache.init_simulation(simulation_id, "in progress", request, simulation)
+        executor = ThreadPoolExecutor(max_workers=1)
+        event_loop = EventLoop(
+            simulation_id=simulation_id, cache=cache, simulation=simulation
+        )
+        background_tasks.add_task(executor.submit, event_loop.run)
 
-    background_tasks.add_task(executor.submit, event_loop.run)
-
-    # loop = asyncio.get_event_loop()
-    # loop.run_in_executor(executor, run_async_in_thread, run_simulation_task, request)
-
-    return {"status": "in progress", "simulation_id": simulation_id}
+        # loop = asyncio.get_event_loop()
+        # loop.run_in_executor(executor, run_async_in_thread, run_simulation_task, request)
+        response.status_code = status.HTTP_201_CREATED
+        return {
+            "status": "in progress",
+            "simulation_id": simulation_id,
+            "agents": [
+                {"name": agent.name, "id": agent.id}
+                for agent in simulation.network.workers
+            ],
+        }
+    except Exception as e:
+        logger.error("Error preparing simulation: %s", e)
+        await cache.update_simulation_status(simulation_id, "failed", datetime.now())
+        return {"status": "failed", "simulation_id": simulation_id, "error": str(e)}
 
 
 if __name__ == "__main__":

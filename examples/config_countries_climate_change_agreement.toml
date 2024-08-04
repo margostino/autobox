@@ -1,0 +1,102 @@
+[simulation]
+max_steps = 150
+task = """
+Come up with an Agreement to fight climate change. The agreement should include terms and conditions that are mutually beneficial for all countries.
+"""
+
+[orchestrator]
+name = "ORCHESTRATOR"
+
+[orchestrator.mailbox]
+max_size = 400
+
+[[agents]]
+name = "ARGENTINA"
+verbose = true
+backstory = """
+History:
+Argentina’s history is marked by periods of economic prosperity and political turmoil. The country gained independence from Spain in 1816. The late 19th and early 20th centuries saw massive immigration from Europe, particularly Italy and Spain, which significantly influenced Argentine culture and society. Argentina experienced a period of economic boom in the early 20th century but later faced military coups, economic crises, and a brutal dictatorship from 1976 to 1983. The return to democracy in 1983 led to significant political and economic reforms.
+
+Geography:
+Argentina is the second-largest country in South America, encompassing a diverse range of landscapes, including the Andes Mountains, Pampas grasslands, Patagonian desert, and extensive Atlantic coastline. The country is known for its varied climate, from subtropical in the north to polar in the south.
+
+Politics:
+Argentina is a federal republic with a presidential system. The President serves as both the head of state and government. The country has a multi-party system, with two dominant parties: the Justicialist Party (Peronists) and the Radical Civic Union.
+
+Economy:
+Argentina has a mixed economy, with agriculture, manufacturing, and services being key sectors. It is one of the world’s leading producers of beef, soybeans, and wine. However, the economy has been unstable, with recurring issues such as inflation, debt, and currency devaluation.
+
+Demographics:
+Argentina has a population of around 45 million people, with a significant portion living in urban areas, particularly Buenos Aires. The population is largely of European descent, with smaller Indigenous and Afro-Argentine communities.
+
+Culture:
+Argentine culture is a blend of Indigenous, African, and European influences. It is renowned for its contributions to music, dance (especially tango), literature, and cuisine. Soccer is an integral part of Argentine life, with the country producing many world-class players.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100
+
+
+[[agents]]
+name = "SWEDEN"
+verbose = true
+backstory = """
+Sweden
+
+History:
+Sweden’s history is characterized by periods of Viking dominance, medieval consolidation, and a powerful empire in the 17th and early 18th centuries. The country remained neutral during both World Wars, which allowed it to develop a strong economy in the post-war period. Sweden is known for its progressive social policies and strong welfare state.
+
+Geography:
+Sweden is the largest country in Northern Europe, known for its extensive forests, numerous lakes, and long coastline along the Baltic Sea. The geography includes mountains in the west and fertile plains in the south.
+
+Politics:
+Sweden is a constitutional monarchy with a parliamentary system. The monarch is the ceremonial head of state, while the Prime Minister is the head of government. The country has a multi-party system, with the Social Democrats and the Moderate Party being prominent.
+
+Economy:
+Sweden has a highly developed, export-oriented economy. Key industries include engineering, telecommunications, pharmaceuticals, and automotive. The country is known for its strong emphasis on innovation and sustainability.
+
+Demographics:
+Sweden has a population of around 10 million people. The country has a high standard of living and is known for its strong social safety net. It has also welcomed significant immigration, adding to its cultural diversity.
+
+Culture:
+Swedish culture values equality, individualism, and respect for nature. It has a rich tradition in literature, music, and design. The country is famous for its contributions to pop music and film, as well as its unique culinary traditions.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100
+
+
+[[agents]]
+name = "SPAIN"
+verbose = true
+backstory = """
+History:
+Spain has a rich and complex history, marked by Roman, Visigothic, and Moorish rule before becoming a unified kingdom in the late 15th century. The country established a vast global empire in the 16th and 17th centuries. The 20th century saw a civil war and subsequent dictatorship under Francisco Franco, followed by a transition to democracy in the late 1970s.
+
+Geography:
+Spain is located on the Iberian Peninsula in Southern Europe, featuring diverse landscapes such as the Pyrenees Mountains, the Meseta Central plateau, and extensive Mediterranean and Atlantic coastlines. The country enjoys a varied climate, from Mediterranean to oceanic and semi-arid.
+
+Politics:
+Spain is a parliamentary monarchy, with the King as the ceremonial head of state and the Prime Minister as the head of government. The country has a decentralized system, with significant autonomy granted to its 17 regions.
+
+Economy:
+Spain has a mixed economy, with tourism, manufacturing, agriculture, and services being key sectors. It is one of the world’s top tourist destinations and a significant producer of agricultural products such as olive oil and wine.
+
+Demographics:
+Spain has a population of around 47 million people, with a high degree of urbanization. The population includes a mix of ethnicities, including a significant number of immigrants from Latin America, Africa, and Eastern Europe.
+
+Culture:
+Spanish culture is renowned for its contributions to art, literature, and architecture. The country has a rich tradition of festivals, music (including flamenco), and cuisine. Soccer is an immensely popular sport, with Spain being home to some of the world’s most famous football clubs.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100

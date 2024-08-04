@@ -2,8 +2,8 @@ import argparse
 import asyncio
 
 from autobox.common.logger import print_banner
-from autobox.core.simulator import prepare_simulation
-from autobox.utils import load_config
+from autobox.core.simulation import prepare_simulation
+from autobox.utils.config import load_config
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
 
     config = load_config(args.config_file)
     simulation = prepare_simulation(config)
-    asyncio.run(simulation.run(timeout=300))
+    asyncio.run(simulation.run())
 
 
 main()

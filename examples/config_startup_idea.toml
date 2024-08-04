@@ -1,0 +1,36 @@
+[simulation]
+max_steps = 150
+task = "Brainstorm a startup idea, and come up with a name, target industry, a high level Business Model, and a tagline."
+
+[orchestrator]
+name = "ORCHESTRATOR"
+
+[orchestrator.mailbox]
+max_size = 400
+
+[[agents]]
+name = "ANA"
+verbose = true
+backstory = """
+Ana is Software Engineer. She is 35 and her passion is to solve problems. Lately she has been concerned about Climate Change.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100
+
+
+[[agents]]
+name = "JOHN"
+verbose = true
+backstory = """
+John is a Data Scientist. He is 30 and his passion is to create new things. He is a big fan of Star Wars and he has a collection of Star Wars toys.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100

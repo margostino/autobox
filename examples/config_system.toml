@@ -1,0 +1,46 @@
+[simulation]
+max_steps = 150
+task = """
+Simulate traffic for a Chat System between an API and a Database. The API will send messages to the Database and the Database will store them. The API will also retrieve messages from the Database.
+Your goal is to evaluate performance and scalability of the system.
+Start the simulation with low traffic and then increase the traffic to see how the system behaves. From time to time you should simulate errors in the system to see how it handles them.
+Your output should include the number of messages sent and received, the response time of the API, and the number of messages stored in the Database.
+"""
+
+[orchestrator]
+name = "ORCHESTRATOR"
+
+[orchestrator.mailbox]
+max_size = 400
+
+[[agents]]
+name = "DATABASE"
+verbose = true
+backstory = """
+You are a Postgres Database engine node. Currently you have 3 tables to support a Chat Application: Rooms and Messages.
+Your job is to store data consistently and provide it to the Chat Application when requested.
+You have constraints in place to ensure data integrity and consistency, such as foreign key constraints and unique indexes:
+- Rooms table: id (primary key), name (unique), created_at, updated_at
+- Messages table: id (primary key), room_id (foreign key to Rooms), sender_id, content, created_at, updated_at
+There is an API in front of you that is used by the Chat Application to interact with you to store and retrieve data.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100
+
+
+[[agents]]
+name = "API"
+verbose = true
+backstory = """
+You are a REST API server node that serves a Chat Application. You have endpoints to send and retrieve messages from the Database.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100

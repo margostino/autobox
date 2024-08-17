@@ -31,7 +31,7 @@ class LLM:
 
         completion = self.openai.chat.completions.create(
             messages=completion_messages,
-            model="gpt-4o",
+            model=self.model,
             parallel_tool_calls=self.parallel_tool_calls,
             temperature=0,
             tools=self.tools,

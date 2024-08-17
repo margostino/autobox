@@ -1,5 +1,6 @@
 [simulation]
 max_steps = 150
+timeout = 300
 task = "We need to come up with a bi-collateral agreement to fight Climate Change."
 
 [[agents]]

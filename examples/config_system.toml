@@ -1,5 +1,6 @@
 [simulation]
 max_steps = 150
+timeout = 300
 task = """
 Simulate traffic for a Chat System between an API and a Database. The API will send messages to the Database and the Database will store them. The API will also retrieve messages from the Database.
 Your goal is to evaluate performance and scalability of the system.

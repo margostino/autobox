@@ -1,5 +1,6 @@
 [simulation]
 max_steps = 150
+timeout = 300
 task = """
 Come up with an Agreement to fight climate change. The agreement should include terms and conditions that are mutually beneficial for all countries.
 """

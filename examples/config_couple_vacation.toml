@@ -1,6 +1,7 @@
 [simulation]
 max_steps = 150
 task = "We need to decide a destiny for our summer vacation."
+timeout = 300
 
 [orchestrator]
 name = "ORCHESTRATOR"

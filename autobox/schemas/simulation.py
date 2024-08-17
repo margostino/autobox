@@ -20,6 +20,7 @@ class AgentConfig(BaseModel):
     backstory: str
     llm: LLMConfig
     mailbox: MailboxConfig
+    role: str
 
 
 class OrchestratorConfig(BaseModel):

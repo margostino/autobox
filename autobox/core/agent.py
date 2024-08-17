@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from asyncio import Queue
-from typing import Any, List
+from typing import Dict, List
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -17,7 +17,7 @@ class Agent(BaseModel, ABC):
     message_broker: MessageBroker
     llm: LLM
     task: str
-    memory: List[Any] = []
+    memory: Dict[str, List[str]] = Field(default={})
     id: int = Field(init=False)
     is_end: bool = False
 

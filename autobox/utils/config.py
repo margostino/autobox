@@ -1,6 +1,5 @@
 import tomllib
 
-
 from autobox.schemas.simulation import (
     AgentConfig,
     LLMConfig,
@@ -32,6 +31,7 @@ def load_config(file_path: str) -> SimulationRequest:
                 verbose=agent_config.get("verbose", False),
                 backstory=agent_config.get("backstory", ""),
                 mailbox=agent_config.get("mailbox", {}),
+                role=agent_config.get("role", ""),
             )
             agents.append(agent)
 

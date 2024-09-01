@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from autobox.core.simulator import Simulator
+from autobox.core.simulation import Simulation
 
 
 class MailboxConfig(BaseModel):
@@ -26,6 +26,7 @@ class AgentConfig(BaseModel):
 class OrchestratorConfig(BaseModel):
     name: str
     mailbox: MailboxConfig
+    instruction: str
 
 
 class SimulationConfig(BaseModel):
@@ -50,10 +51,15 @@ class SimulationStatus(BaseModel):
     details: SimulationRequest
     started_at: datetime
     finished_at: datetime = Field(default=None)
-    simulation: Simulator = Field(default=None)
+    simulation: Simulation = Field(default=None)
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class SimulationStatusAgentResponse(BaseModel):
+    id: int
+    name: str
 
 
 class SimulationStatusResponse(BaseModel):
@@ -62,6 +68,8 @@ class SimulationStatusResponse(BaseModel):
     details: SimulationRequest
     started_at: datetime
     finished_at: datetime = Field(default=None)
+    agents: List[SimulationStatusAgentResponse]
+    orchestrator: SimulationStatusAgentResponse
 
     class Config:
         arbitrary_types_allowed = True

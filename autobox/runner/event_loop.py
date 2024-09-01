@@ -5,13 +5,13 @@ from datetime import datetime
 from openai import BaseModel
 
 from autobox.cache.simulation import SimulationCache
-from autobox.core.simulator import Simulator
+from autobox.core.simulation import Simulation
 
 
 class EventLoop(BaseModel):
     simulation_id: str
     cache: SimulationCache
-    simulation: Simulator
+    simulation: Simulation
 
     def run(self):
         loop = asyncio.new_event_loop()

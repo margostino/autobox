@@ -1,64 +1,33 @@
 import asyncio
+import time
 
-from autobox.core.llm import LLM
-from autobox.core.messaging import MessageBroker
+from pydantic import BaseModel, Field
+
 from autobox.core.network import Network
-from autobox.core.orchestrator import Orchestrator
-from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
-from autobox.core.prompts.tools.worker import get_tools
-from autobox.core.prompts.worker import prompt as agent_prompt
-from autobox.core.simulator import Simulator
-from autobox.core.worker import Worker
-from autobox.schemas.simulation import SimulationRequest
+from autobox.utils.console import blue, green, yellow
 
 
-def prepare_simulation(config: SimulationRequest):
-    task = config.simulation.task
+class Simulation(BaseModel):
+    network: Network
+    timeout: int = Field(default=120)
 
-    message_broker = MessageBroker()
+    async def run(self):
+        print(f"{green('✅ Autobox is running')}")
+        start_time = time.time()
 
-    workers = []
-    worker_ids = {}
-    worker_names = {}
-    workers_memory_for_orchestrator = {}
-    for agent in config.agents:
-        worker = Worker(
-            name=agent.name,
-            mailbox=asyncio.Queue(maxsize=agent.mailbox.max_size),
-            message_broker=message_broker,
-            llm=LLM(agent_prompt(task, agent.backstory)),
-            task=task,
-            memory={"worker": []},
-        )
-        worker_ids[worker.name] = worker.id
-        workers.append(worker)
-        worker_names[worker.name] = agent.role
-        message_broker.subscribe(worker.id, worker.mailbox)
-        workers_memory_for_orchestrator[worker.name] = []
+        task = asyncio.create_task(self.network.run())
 
-    tools = get_tools(worker_names)
+        try:
+            await asyncio.wait_for(task, timeout=self.timeout)
+        except asyncio.TimeoutError:
+            print(f"{yellow('Simulation ended due to timeout.')}")
+        finally:
+            self.network.stop()
+            print(f"{blue('🔚 Simulation finished.')}")
 
-    orchestrator = Orchestrator(
-        name=config.orchestrator.name,
-        mailbox=asyncio.Queue(maxsize=config.orchestrator.mailbox.max_size),
-        message_broker=message_broker,
-        llm=LLM(
-            orchestrator_prompt(task, config.simulation.max_steps),
-            tools=tools,
-            parallel_tool_calls=True,
-        ),
-        worker_ids=worker_ids,
-        task=task,
-        memory={"orchestrator": [], **workers_memory_for_orchestrator},
-        max_steps=config.simulation.max_steps,
-    )
+        elapsed_time = int(time.time() - start_time)
+        print(f"{blue(f"⏱️ Elapsed time: {elapsed_time} seconds.")}")
 
-    message_broker.subscribe(orchestrator.id, orchestrator.mailbox)
-
-    network = Network(
-        workers=workers,
-        orchestrator=orchestrator,
-        message_broker=message_broker,
-    )
-
-    return Simulator(network=network, timeout=config.simulation.timeout)
+    def abort(self):
+        self.network.stop()
+        print(f"{blue('🔚 Simulation aborted.')}")

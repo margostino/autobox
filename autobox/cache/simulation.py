@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel
 
-from autobox.core.simulator import Simulator
+from autobox.core.simulation import Simulation
 from autobox.schemas.simulation import SimulationRequest, SimulationStatus
 
 
@@ -45,7 +45,7 @@ class SimulationCache(BaseModel):
         simulation_id: str,
         status: str,
         request: Optional[SimulationRequest],
-        simulation: Optional[Simulator],
+        simulation: Optional[Simulation],
     ):
         async with self.lock:
             self.simulations[simulation_id] = SimulationStatus(

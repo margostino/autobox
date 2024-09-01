@@ -8,11 +8,12 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
 
 from autobox.cache.simulation import SimulationCache
 from autobox.common.logger import print_banner
-from autobox.core.simulation import prepare_simulation
+from autobox.core.bootstrap import prepare_simulation
 from autobox.runner.event_loop import EventLoop
 from autobox.schemas.simulation import (
     InstructionRequest,
     SimulationRequest,
+    SimulationStatusAgentResponse,
     SimulationStatusResponse,
 )
 
@@ -23,11 +24,52 @@ app = FastAPI()
 @app.get("/simulations", response_model=List[SimulationStatusResponse])
 async def get_simulations():
     simulations = await cache.get_all_simulations()
+    # simulation_response = [
+    #     SimulationStatusResponse(**simulation.model_dump(exclude={"simulation"}))
+    #     for simulation in simulations
+    # ]
     simulation_response = [
-        SimulationStatusResponse(**simulation.dict(exclude={"simulation"}))
-        for simulation in simulations
+        SimulationStatusResponse(
+            simulation_id=simulation_status.simulation_id,
+            status=simulation_status.status,
+            details=simulation_status.details,
+            started_at=simulation_status.started_at,
+            finished_at=simulation_status.finished_at,
+            agents=[
+                SimulationStatusAgentResponse(id=agent_id, name=agent_name)
+                for agent_name, agent_id in simulation_status.simulation.network.orchestrator.worker_ids.items()
+            ],
+            orchestrator=SimulationStatusAgentResponse(
+                id=simulation_status.simulation.network.orchestrator.id,
+                name=simulation_status.simulation.network.orchestrator.name,
+            ),
+        )
+        for simulation_status in simulations
     ]
     return simulation_response
+
+
+@app.get("/simulations/{simulation_id}", response_model=SimulationStatusResponse)
+async def get_simulation_by_id(simulation_id: str):
+    simulation_status = await cache.get_simulation_status(simulation_id)
+    if simulation_status is not None:
+        return SimulationStatusResponse(
+            simulation_id=simulation_status.simulation_id,
+            status=simulation_status.status,
+            details=simulation_status.details,
+            started_at=simulation_status.started_at,
+            finished_at=simulation_status.finished_at,
+            agents=[
+                SimulationStatusAgentResponse(id=agent_id, name=agent_name)
+                for agent_name, agent_id in simulation_status.simulation.network.orchestrator.worker_ids.items()
+            ],
+            orchestrator=SimulationStatusAgentResponse(
+                id=simulation_status.simulation.network.orchestrator.id,
+                name=simulation_status.simulation.network.orchestrator.name,
+            ),
+        )
+    else:
+        raise HTTPException(status_code=404, detail="simulation not found")
 
 
 @app.post("/simulations/{simulation_id}/abort")
@@ -42,7 +84,7 @@ async def abort_simulation(simulation_id: str):
 
 @app.post("/simulations/{simulation_id}/agents/{agent_id}/instruction")
 async def update_simulation_instruction(
-    simulation_id: str, agent_id: str, request: InstructionRequest
+    simulation_id: str, agent_id: str, request: InstructionRequest, response: Response
 ):
     simulation_status = await cache.get_simulation_status(simulation_id)
     if simulation_status is None:
@@ -51,7 +93,8 @@ async def update_simulation_instruction(
     simulation_status.simulation.network.send_intruction_for_workers(
         agent_id=int(agent_id), instruction=request.instruction
     )
-    return
+    response.status_code = status.HTTP_200_OK
+    return response
 
 
 @app.post("/simulations")

@@ -7,10 +7,13 @@ class MailBoxConfig:
 
 
 class OrchestratorConfig:
-    def __init__(self, name: str, mailbox: MailBoxConfig, verbose: bool):
+    def __init__(
+        self, name: str, mailbox: MailBoxConfig, verbose: bool, instruction: str
+    ):
         self.name = name
         self.mailbox = mailbox
         self.verbose = verbose
+        self.instruction = instruction
 
 
 class LLMConfig:

@@ -6,6 +6,7 @@ from typing import Dict, List
 from openai.types.chat import ChatCompletion
 from pydantic import Field
 
+from autobox.common.logger import Logger
 from autobox.core.agent import Agent
 from autobox.core.llm import LLM
 from autobox.core.messaging import MessageBroker
@@ -30,20 +31,21 @@ class Orchestrator(Agent):
         task: str,
         memory: Dict[str, List[str]],
         max_steps: int,
+        logger=Logger,
     ):
-        super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task, memory=memory)
+        super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task, memory=memory, logger=logger)
         self.worker_ids = worker_ids
         self.worker_names = {value: key for key, value in worker_ids.items()}
         self.max_steps = max_steps
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:
-            print(f"{blue(f"📬 Orchestrator {self.name} ({self.id}) preparing initial message...")}")
+            self.logger.info(f"{blue(f"📬 Orchestrator {self.name} ({self.id}) preparing initial message...")}")
             agent_decisions = []
         else:
             from_agent_name = self.worker_names[message.from_agent_id]
-            print(f"{blue(f"📨 Orchestrator {self.name} ({self.id}) handling message from {from_agent_name}...")}")
-            print(f"{yellow(f"🗣️ {from_agent_name} said:")} {message.value}")
+            self.logger.info(f"{blue(f"📨 Orchestrator {self.name} ({self.id}) handling message from {from_agent_name}...")}")
+            self.logger.info(f"{yellow(f"🗣️ {from_agent_name} said:")} {message.value}")
             self.memory[from_agent_name].append(f"{from_agent_name} said: {message.value}")
             agent_decisions = self.memory[from_agent_name]
 
@@ -103,11 +105,9 @@ class Orchestrator(Agent):
         if self.is_end:
             asyncio.sleep(4)
             value = completion.choices[0].message.content
-            print(f"{green('Orchestrator is ending process...')}")
-            print('\n\n')
-            print(f"{blue('🔄 Total iterations:')} {self.iterations_counter}")
-            print(f"{blue('🏁 Final result:')} {value}")
-            print('\n\n')
+            self.logger.info(f"{green('🔚 Orchestrator is ending process...')}")
+            self.logger.info(f"{blue('🔄 Total iterations:')} {self.iterations_counter}")
+            self.logger.info(f"{blue('🏁 Final result:')} {value}")
 
     def send(self, message: Message):
         self.message_broker.publish(message)

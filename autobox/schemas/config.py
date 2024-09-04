@@ -21,14 +21,19 @@ class LLMConfig:
         self.model = model
 
 
+class LoggingConfig:
+    def __init__(self, file_path: Optional[str] = None):
+        self.file_path = file_path
+
+
 class AgentConfig:
     def __init__(
         self,
         name: str,
         backstory: str,
-        verbose: bool,
         mailbox: MailBoxConfig,
         llm: Optional[LLMConfig] = None,
+        verbose: bool = False,
     ):
         self.llm = llm
         self.name = name
@@ -41,7 +46,9 @@ class SimulationConfig:
     def __init__(
         self,
         max_steps: int,
+        timeout: int,
         task: str,
+        logging: LoggingConfig,
         agents: List[AgentConfig],
         orchestrator: OrchestratorConfig,
     ):
@@ -49,3 +56,5 @@ class SimulationConfig:
         self.task = task
         self.agents = agents
         self.orchestrator = orchestrator
+        self.timeout = timeout
+        self.loggings = logging

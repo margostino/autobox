@@ -1,5 +1,6 @@
 import asyncio
 
+from autobox.common.logger import Logger
 from autobox.core.llm import LLM
 from autobox.core.messaging import MessageBroker
 from autobox.core.network import Network
@@ -13,7 +14,9 @@ from autobox.schemas.simulation import SimulationRequest
 
 
 def prepare_simulation(config: SimulationRequest):
-    task = config.simulation.task
+    simulation_config = config.simulation
+    orchestrator_config = config.orchestrator
+    logging_config = config.simulation.logging
 
     message_broker = MessageBroker()
 
@@ -26,8 +29,13 @@ def prepare_simulation(config: SimulationRequest):
             name=agent.name,
             mailbox=asyncio.Queue(maxsize=agent.mailbox.max_size),
             message_broker=message_broker,
-            llm=LLM(agent_prompt(task, agent.backstory)),
-            task=task,
+            llm=LLM(agent_prompt(simulation_config.task, agent.backstory)),
+            task=simulation_config.task,
+            logger=Logger(
+                agent_name=agent.name,
+                verbose=agent.verbose,
+                log_path=logging_config.file_path,
+            ),
             memory={"worker": []},
         )
         worker_ids[worker.name] = worker.id
@@ -39,20 +47,27 @@ def prepare_simulation(config: SimulationRequest):
     tools = get_tools(worker_names)
 
     orchestrator = Orchestrator(
-        name=config.orchestrator.name,
-        mailbox=asyncio.Queue(maxsize=config.orchestrator.mailbox.max_size),
+        name=orchestrator_config.name,
+        mailbox=asyncio.Queue(maxsize=orchestrator_config.mailbox.max_size),
         message_broker=message_broker,
         llm=LLM(
             orchestrator_prompt(
-                task, config.simulation.max_steps, config.orchestrator.instruction
+                simulation_config.task,
+                simulation_config.max_steps,
+                orchestrator_config.instruction,
             ),
             tools=tools,
             parallel_tool_calls=True,
         ),
         worker_ids=worker_ids,
-        task=task,
+        task=simulation_config.task,
+        logger=Logger(
+            agent_name=orchestrator_config.name,
+            verbose=orchestrator_config.verbose,
+            log_path=logging_config.file_path,
+        ),
         memory={"orchestrator": [], **workers_memory_for_orchestrator},
-        max_steps=config.simulation.max_steps,
+        max_steps=simulation_config.max_steps,
     )
 
     message_broker.subscribe(orchestrator.id, orchestrator.mailbox)

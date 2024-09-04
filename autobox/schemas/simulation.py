@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,9 +14,13 @@ class LLMConfig(BaseModel):
     model: str
 
 
+class LoggingConfig(BaseModel):
+    file_path: Optional[str] = Field(default=None)
+
+
 class AgentConfig(BaseModel):
     name: str
-    verbose: bool
+    verbose: bool = Field(default=False)
     backstory: str
     llm: LLMConfig
     mailbox: MailboxConfig
@@ -27,12 +31,17 @@ class OrchestratorConfig(BaseModel):
     name: str
     mailbox: MailboxConfig
     instruction: str
+    verbose: bool = Field(default=False)
 
 
 class SimulationConfig(BaseModel):
     max_steps: int
     timeout: int
     task: str
+    logging: LoggingConfig
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SimulationRequest(BaseModel):

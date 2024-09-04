@@ -5,6 +5,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field, model_validator
 
+from autobox.common.logger import Logger
 from autobox.core.llm import LLM
 from autobox.core.messaging import MessageBroker
 from autobox.schemas.message import Message
@@ -20,6 +21,7 @@ class Agent(BaseModel, ABC):
     memory: Dict[str, List[str]] = Field(default={})
     id: int = Field(init=False)
     is_end: bool = False
+    logger: Logger
 
     @model_validator(mode="before")
     @classmethod

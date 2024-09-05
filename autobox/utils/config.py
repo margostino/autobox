@@ -1,5 +1,7 @@
+import argparse
 import tomllib
 
+from autobox.schemas.config import LoggingConfig, ServerConfig
 from autobox.schemas.simulation import (
     AgentConfig,
     LLMConfig,
@@ -8,7 +10,19 @@ from autobox.schemas.simulation import (
 )
 
 
-def load_config(file_path: str) -> SimulationRequest:
+def parse_args():
+    parser = argparse.ArgumentParser(description="Autobox")
+    parser.add_argument(
+        "--config-file",
+        type=str,
+        required=True,
+        default="config.toml",
+        help="Path to the configuration file",
+    )
+    return parser.parse_args()
+
+
+def load_simulation_config(file_path: str = "config.toml") -> SimulationRequest:
     with open(file_path, "rb") as f:
         config = tomllib.load(f)
         orchestrator = config.get("orchestrator", {})
@@ -17,6 +31,8 @@ def load_config(file_path: str) -> SimulationRequest:
         timeout = simulation_config.get("timeout", 0)
         task = simulation_config.get("task", "")
         verbose = simulation_config.get("verbose", False)
+        name = simulation_config.get("name", "")
+        logging = simulation_config.get("logging", {})
 
         agents = []
         for agent_config in config.get("agents", []):
@@ -35,13 +51,35 @@ def load_config(file_path: str) -> SimulationRequest:
             )
             agents.append(agent)
 
-        simulation = SimulationConfig(max_steps=max_steps, timeout=timeout, task=task)
+        simulation = SimulationConfig(
+            name=name,
+            max_steps=max_steps,
+            timeout=timeout,
+            task=task,
+            verbose=verbose,
+            logging=logging,
+        )
 
         autobox_config = SimulationRequest(
             simulation=simulation,
             agents=agents,
-            verbose=verbose
+            verbose=verbose,
             orchestrator=orchestrator,
         )
 
         return autobox_config
+
+
+def load_server_config(file_path: str = "server.toml") -> ServerConfig:
+    with open(file_path, "rb") as f:
+        config = tomllib.load(f)
+        server_config = config.get("server", {})
+        logging_config = config.get("logging", {})
+        logging = LoggingConfig(file_path=logging_config.get("file_path"))
+        return ServerConfig(
+            host=server_config.get("host", ""),
+            port=server_config.get("port", 0),
+            reload=server_config.get("reload", False),
+            verbose=server_config.get("verbose", False),
+            logging=logging,
+        )

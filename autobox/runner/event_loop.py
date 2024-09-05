@@ -21,6 +21,7 @@ class EventLoop(BaseModel):
 
     async def start_simulation(self):
         try:
+            self.simulation.plan()
             await self.simulation.run()
             simulation_status = await self.cache.get_simulation_status(
                 self.simulation_id

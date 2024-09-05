@@ -1,5 +1,3 @@
-# from asyncio.log import logger
-from asyncio.log import logger
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List
@@ -8,7 +6,7 @@ from uuid import uuid4
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
 
 from autobox.cache.simulation import SimulationCache
-from autobox.common.logger import print_banner
+from autobox.common.logger import Logger, print_banner
 from autobox.core.bootstrap import prepare_simulation
 from autobox.runner.event_loop import EventLoop
 from autobox.schemas.simulation import (
@@ -17,9 +15,15 @@ from autobox.schemas.simulation import (
     SimulationStatusAgentResponse,
     SimulationStatusResponse,
 )
+from autobox.utils.config import load_server_config, parse_args
 
-cache = SimulationCache()
+args = parse_args()
 app = FastAPI()
+cache = SimulationCache()
+config = load_server_config(args.config_file)
+logger = Logger(
+    name="server", verbose=config.verbose, log_path=config.logging.file_path
+)
 
 
 @app.get("/simulations", response_model=List[SimulationStatusResponse])

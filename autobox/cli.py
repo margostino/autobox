@@ -1,28 +1,17 @@
-import argparse
 import asyncio
 
 from autobox.common.logger import print_banner
-from autobox.core.simulation import prepare_simulation
-from autobox.utils.config import load_config
+from autobox.core.bootstrap import prepare_simulation
+from autobox.utils.config import load_simulation_config, parse_args
 
 
 def main():
     print_banner()
-
-    parser = argparse.ArgumentParser(description="Autobox")
-    parser.add_argument(
-        "--config-file",
-        type=str,
-        required=True,
-        default="config.toml",
-        help="Path to the configuration file",
-    )
-
-    args = parser.parse_args()
+    args = parse_args()
 
     print(f"Using configuration file: {args.config_file}")
 
-    config = load_config(args.config_file)
+    config = load_simulation_config(args.config_file)
     simulation = prepare_simulation(config)
     asyncio.run(simulation.run())
 

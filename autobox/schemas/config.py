@@ -57,3 +57,19 @@ class SimulationConfig:
         self.loggings = logging
         self.verbose = verbose
         self.name = name
+
+
+class ServerConfig:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        reload: bool,
+        logging: LoggingConfig,
+        verbose: bool = False,
+    ):
+        self.host = host
+        self.port = port
+        self.reload = reload
+        self.logging = logging
+        self.verbose = verbose

@@ -20,6 +20,7 @@ class Orchestrator(Agent):
     worker_names: Dict[int, str] = {}
     iterations_counter: int = Field(default=0)
     max_steps: int = Field(default=5)
+    instruction: str = Field(default="")
 
     def __init__(
         self,
@@ -31,12 +32,14 @@ class Orchestrator(Agent):
         task: str,
         memory: Dict[str, List[str]],
         max_steps: int,
+        instruction: str,
         logger=Logger,
     ):
         super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task, memory=memory, logger=logger)
         self.worker_ids = worker_ids
         self.worker_names = {value: key for key, value in worker_ids.items()}
         self.max_steps = max_steps
+        self.instruction = instruction
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:

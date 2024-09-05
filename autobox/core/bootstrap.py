@@ -43,6 +43,7 @@ def prepare_simulation(config: SimulationRequest):
             task=simulation_config.task,
             logger=logger,
             memory={"worker": []},
+            backstory=agent.backstory,
         )
         worker_ids[worker.name] = worker.id
         workers.append(worker)
@@ -70,6 +71,7 @@ def prepare_simulation(config: SimulationRequest):
         logger=logger,
         memory={"orchestrator": [], **workers_memory_for_orchestrator},
         max_steps=simulation_config.max_steps,
+        instruction=orchestrator_config.instruction,
     )
 
     message_broker.subscribe(orchestrator.id, orchestrator.mailbox)

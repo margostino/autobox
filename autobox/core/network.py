@@ -6,14 +6,16 @@ from pydantic import BaseModel
 from autobox.common.logger import Logger
 from autobox.core.agent import Agent
 from autobox.core.messaging import MessageBroker
+from autobox.core.orchestrator import Orchestrator
+from autobox.core.worker import Worker
 from autobox.schemas.message import Message
 from autobox.utils.console import blue
 
 
 class Network(BaseModel):
     message_broker: MessageBroker
-    workers: List[Agent]
-    orchestrator: Agent
+    workers: List[Worker]
+    orchestrator: Orchestrator
     logger: Logger
 
     def register_agent(self, worker: Agent):

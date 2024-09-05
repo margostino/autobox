@@ -1,5 +1,4 @@
-# from typing import Literal
-# type: Literal["counter", "gauge", "histogram"]
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -7,7 +6,7 @@ from pydantic import BaseModel
 class Metric(BaseModel):
     name: str
     description: str
-    type: str
+    type: Literal["counter", "gauge", "histogram"]
     unit: str
 
 

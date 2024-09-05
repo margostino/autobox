@@ -9,6 +9,7 @@ from autobox.utils.console import blue, spin
 
 class Worker(Agent):
     human_instruction: str = Field(default=None)
+    backstory: str
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:

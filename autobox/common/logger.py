@@ -59,3 +59,9 @@ class Logger(BaseModel):
             print(message)
 
         self._logger.info(message)
+
+    def error(self, message: str, exception: Exception = None):
+        if self.verbose:
+            print(message)
+
+        self._logger.error(message, exc_info=exception)

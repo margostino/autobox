@@ -20,7 +20,6 @@ class LoggingConfig(BaseModel):
 
 class AgentConfig(BaseModel):
     name: str
-    verbose: bool = Field(default=False)
     backstory: str
     llm: LLMConfig
     mailbox: MailboxConfig
@@ -31,14 +30,15 @@ class OrchestratorConfig(BaseModel):
     name: str
     mailbox: MailboxConfig
     instruction: str
-    verbose: bool = Field(default=False)
 
 
 class SimulationConfig(BaseModel):
+    name: str
     max_steps: int
     timeout: int
     task: str
     logging: LoggingConfig
+    verbose: bool = Field(default=False)
 
     class Config:
         arbitrary_types_allowed = True

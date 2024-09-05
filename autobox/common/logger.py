@@ -1,9 +1,10 @@
 import logging
 import sys
-from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field, PrivateAttr
+
+from autobox.utils.normalization import value_to_id
 
 
 def print_banner():
@@ -21,7 +22,7 @@ def print_banner():
 
 
 class Logger(BaseModel):
-    agent_name: str
+    name: str
     verbose: bool = Field(default=False)
     log_path: Optional[str] = None
     log_file: Optional[str] = None
@@ -30,8 +31,10 @@ class Logger(BaseModel):
     def __init__(self, **data):
         super().__init__(**data)
         if self.log_file is None:
-            self.log_file = datetime.now().strftime("%Y%m%d%H%M") + ".log"
-        self._logger = logging.getLogger(self.agent_name)
+            # self.log_file = datetime.now().strftime("%Y%m%d%H%M") + ".log"
+            self.log_file = f"{value_to_id(self.name)}.log"
+
+        self._logger = logging.getLogger(self.name)
         self._logger.setLevel(logging.DEBUG)
 
         stdout_handler = logging.StreamHandler(stream=sys.stdout)
@@ -42,7 +45,10 @@ class Logger(BaseModel):
         # fmt = logging.Formatter(
         #     "%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >>> %(message)s"
         # )
-        fmt = logging.Formatter("%(name)s: %(asctime)s | %(levelname)s | %(message)s")
+        fmt = logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
         stdout_handler.setFormatter(fmt)
         err_handler.setFormatter(fmt)
         self._logger.addHandler(stdout_handler)

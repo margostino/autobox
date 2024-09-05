@@ -16,6 +16,7 @@ def load_config(file_path: str) -> SimulationRequest:
         max_steps = simulation_config.get("max_steps", 0)
         timeout = simulation_config.get("timeout", 0)
         task = simulation_config.get("task", "")
+        verbose = simulation_config.get("verbose", False)
 
         agents = []
         for agent_config in config.get("agents", []):
@@ -28,7 +29,6 @@ def load_config(file_path: str) -> SimulationRequest:
             agent = AgentConfig(
                 name=agent_config.get("name", ""),
                 llm=llm_config,
-                verbose=agent_config.get("verbose", False),
                 backstory=agent_config.get("backstory", ""),
                 mailbox=agent_config.get("mailbox", {}),
                 role=agent_config.get("role", ""),
@@ -40,6 +40,7 @@ def load_config(file_path: str) -> SimulationRequest:
         autobox_config = SimulationRequest(
             simulation=simulation,
             agents=agents,
+            verbose=verbose
             orchestrator=orchestrator,
         )
 

@@ -7,12 +7,9 @@ class MailBoxConfig:
 
 
 class OrchestratorConfig:
-    def __init__(
-        self, name: str, mailbox: MailBoxConfig, verbose: bool, instruction: str
-    ):
+    def __init__(self, name: str, mailbox: MailBoxConfig, instruction: str):
         self.name = name
         self.mailbox = mailbox
-        self.verbose = verbose
         self.instruction = instruction
 
 
@@ -33,24 +30,24 @@ class AgentConfig:
         backstory: str,
         mailbox: MailBoxConfig,
         llm: Optional[LLMConfig] = None,
-        verbose: bool = False,
     ):
         self.llm = llm
         self.name = name
         self.backstory = backstory
-        self.verbose = verbose
         self.mailbox = mailbox
 
 
 class SimulationConfig:
     def __init__(
         self,
+        name: str,
         max_steps: int,
         timeout: int,
         task: str,
         logging: LoggingConfig,
         agents: List[AgentConfig],
         orchestrator: OrchestratorConfig,
+        verbose: bool = False,
     ):
         self.max_steps = max_steps
         self.task = task
@@ -58,3 +55,5 @@ class SimulationConfig:
         self.orchestrator = orchestrator
         self.timeout = timeout
         self.loggings = logging
+        self.verbose = verbose
+        self.name = name

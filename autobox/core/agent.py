@@ -40,7 +40,7 @@ class Agent(BaseModel, ABC):
         pass
 
     async def run(self):
-        print(f"{green(f"🟢 Agent {self.name} ({self.id}) is running")}")
+        self.logger.info(f"{green(f'🟢 Agent {self.name} ({self.id}) is running')}")
         while not self.is_end:
             if not self.mailbox.empty():
                 message = self.mailbox.get_nowait()

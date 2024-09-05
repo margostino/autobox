@@ -3,6 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
+from autobox.common.logger import Logger
 from autobox.core.agent import Agent
 from autobox.core.messaging import MessageBroker
 from autobox.schemas.message import Message
@@ -13,6 +14,7 @@ class Network(BaseModel):
     message_broker: MessageBroker
     workers: List[Agent]
     orchestrator: Agent
+    logger: Logger
 
     def register_agent(self, worker: Agent):
         self.workers.append(worker)

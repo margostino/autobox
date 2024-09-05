@@ -12,11 +12,21 @@ from autobox.core.simulation import Simulation
 from autobox.core.worker import Worker
 from autobox.schemas.simulation import SimulationRequest
 
+logger: Logger = None
+
 
 def prepare_simulation(config: SimulationRequest):
     simulation_config = config.simulation
     orchestrator_config = config.orchestrator
     logging_config = config.simulation.logging
+
+    logger = Logger(
+        name=simulation_config.name,
+        verbose=simulation_config.verbose,
+        log_path=logging_config.file_path,
+    )
+
+    logger.info("Bootstrapping simulation...")
 
     message_broker = MessageBroker()
 
@@ -31,11 +41,7 @@ def prepare_simulation(config: SimulationRequest):
             message_broker=message_broker,
             llm=LLM(agent_prompt(simulation_config.task, agent.backstory)),
             task=simulation_config.task,
-            logger=Logger(
-                agent_name=agent.name,
-                verbose=agent.verbose,
-                log_path=logging_config.file_path,
-            ),
+            logger=logger,
             memory={"worker": []},
         )
         worker_ids[worker.name] = worker.id
@@ -61,11 +67,7 @@ def prepare_simulation(config: SimulationRequest):
         ),
         worker_ids=worker_ids,
         task=simulation_config.task,
-        logger=Logger(
-            agent_name=orchestrator_config.name,
-            verbose=orchestrator_config.verbose,
-            log_path=logging_config.file_path,
-        ),
+        logger=logger,
         memory={"orchestrator": [], **workers_memory_for_orchestrator},
         max_steps=simulation_config.max_steps,
     )
@@ -76,6 +78,7 @@ def prepare_simulation(config: SimulationRequest):
         workers=workers,
         orchestrator=orchestrator,
         message_broker=message_broker,
+        logger=logger,
     )
 
     return Simulation(network=network, timeout=config.simulation.timeout)

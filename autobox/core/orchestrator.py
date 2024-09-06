@@ -6,6 +6,7 @@ from typing import Dict, List
 from openai.types.chat import ChatCompletion
 from pydantic import Field
 
+from autobox.cache.metrics import MetricsCache
 from autobox.common.logger import Logger
 from autobox.core.agent import Agent
 from autobox.core.llm import LLM
@@ -21,6 +22,7 @@ class Orchestrator(Agent):
     iterations_counter: int = Field(default=0)
     max_steps: int = Field(default=5)
     instruction: str = Field(default="")
+    metrics_cache: MetricsCache = Field(default=None)
 
     def __init__(
         self,
@@ -33,13 +35,15 @@ class Orchestrator(Agent):
         memory: Dict[str, List[str]],
         max_steps: int,
         instruction: str,
-        logger=Logger,
+        logger: Logger,
+        metrics_cache: MetricsCache
     ):
         super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task, memory=memory, logger=logger)
         self.worker_ids = worker_ids
         self.worker_names = {value: key for key, value in worker_ids.items()}
         self.max_steps = max_steps
         self.instruction = instruction
+        self.metrics_cache = metrics_cache
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:

@@ -1,9 +1,9 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-class Metric(BaseModel):
+class MetricDefinition(BaseModel):
     name: str
     description: str
     type: Literal["counter", "gauge", "histogram"]
@@ -11,4 +11,12 @@ class Metric(BaseModel):
 
 
 class Metrics(BaseModel):
-    metrics: list[Metric]
+    metrics: list[MetricDefinition]
+
+
+class Metric(BaseModel):
+    name: str
+    description: str
+    type: Literal["counter", "gauge", "histogram"]
+    unit: str
+    value: float = Field(default=0.0)

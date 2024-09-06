@@ -15,7 +15,7 @@ class LLM:
         self,
         system_prompt: str,
         tools: List[Dict] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4o-2024-08-06",
         parallel_tool_calls: bool = NOT_GIVEN,
     ):
         self.model = model

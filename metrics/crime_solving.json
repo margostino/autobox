@@ -1,0 +1,86 @@
+{
+    "clue_discovery_total": {
+        "name": "clue_discovery_total",
+        "description": "Tracks the total number of clues discovered by Detective Graves during the investigation.",
+        "type": "counter",
+        "unit": "clues",
+        "value": 0.0
+    },
+    "suspect_interrogation_count": {
+        "name": "suspect_interrogation_count",
+        "description": "Counts the number of times each suspect is interrogated by Detective Graves.",
+        "type": "counter",
+        "unit": "interrogations",
+        "value": 0.0
+    },
+    "evidence_analysis_time_seconds": {
+        "name": "evidence_analysis_time_seconds",
+        "description": "Measures the time taken to analyze each piece of evidence collected from the crime scene.",
+        "type": "histogram",
+        "unit": "seconds",
+        "value": 0.0
+    },
+    "suspect_suspicion_level": {
+        "name": "suspect_suspicion_level",
+        "description": "Gauges the level of suspicion Detective Graves has for each suspect based on gathered evidence and interrogation results.",
+        "type": "gauge",
+        "unit": "suspicion score",
+        "value": 0.0
+    },
+    "forensic_analysis_accuracy": {
+        "name": "forensic_analysis_accuracy",
+        "description": "Assesses the accuracy of forensic analysis conducted by Dr. Ashcroft in identifying key details of the crime.",
+        "type": "gauge",
+        "unit": "accuracy percentage",
+        "value": 0.0
+    },
+    "decision_iterations_total": {
+        "name": "decision_iterations_total",
+        "description": "Tracks the number of iterations Detective Graves goes through before making a final decision on the killer.",
+        "type": "counter",
+        "unit": "iterations",
+        "value": 0.0
+    },
+    "evidence_correlation_index": {
+        "name": "evidence_correlation_index",
+        "description": "Measures the correlation between different pieces of evidence and their relevance to the suspects.",
+        "type": "gauge",
+        "unit": "correlation score",
+        "value": 0.0
+    },
+    "investigation_progress_percentage": {
+        "name": "investigation_progress_percentage",
+        "description": "Indicates the overall progress of the investigation towards solving the crime.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "false_lead_count": {
+        "name": "false_lead_count",
+        "description": "Counts the number of false leads encountered during the investigation.",
+        "type": "counter",
+        "unit": "false leads",
+        "value": 0.0
+    },
+    "suspect_alibi_verification_time_seconds": {
+        "name": "suspect_alibi_verification_time_seconds",
+        "description": "Measures the time taken to verify the alibis of each suspect.",
+        "type": "histogram",
+        "unit": "seconds",
+        "value": 0.0
+    },
+    "detective_stress_level": {
+        "name": "detective_stress_level",
+        "description": "Monitors the stress level of Detective Graves throughout the investigation, which can impact decision-making.",
+        "type": "gauge",
+        "unit": "stress level score",
+        "value": 0.0
+    },
+    "public_perception_index": {
+        "name": "public_perception_index",
+        "description": "Evaluates the public's perception of the investigation's progress and Detective Graves' effectiveness.",
+        "type": "gauge",
+        "unit": "perception score",
+        "value": 0.0
+    }
+}

@@ -30,6 +30,7 @@ class OrchestratorConfig(BaseModel):
     name: str
     mailbox: MailboxConfig
     instruction: str
+    llm: LLMConfig
 
 
 class SimulationConfig(BaseModel):
@@ -39,6 +40,7 @@ class SimulationConfig(BaseModel):
     task: str
     logging: LoggingConfig
     verbose: bool = Field(default=False)
+    metrics_path: str
 
     class Config:
         arbitrary_types_allowed = True

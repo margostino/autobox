@@ -1,21 +1,28 @@
 from typing import List, Optional
 
 
+class LLMConfig:
+    def __init__(self, model: str):
+        self.model = model
+
+
 class MailBoxConfig:
     def __init__(self, max_size: int):
         self.max_size = max_size
 
 
 class OrchestratorConfig:
-    def __init__(self, name: str, mailbox: MailBoxConfig, instruction: str):
+    def __init__(
+        self,
+        name: str,
+        mailbox: MailBoxConfig,
+        instruction: str,
+        llm: Optional[LLMConfig] = None,
+    ):
         self.name = name
         self.mailbox = mailbox
         self.instruction = instruction
-
-
-class LLMConfig:
-    def __init__(self, model: str):
-        self.model = model
+        self.llm = llm
 
 
 class LoggingConfig:
@@ -48,6 +55,7 @@ class SimulationConfig:
         agents: List[AgentConfig],
         orchestrator: OrchestratorConfig,
         verbose: bool = False,
+        metrics_path: str = None,
     ):
         self.max_steps = max_steps
         self.task = task
@@ -57,6 +65,7 @@ class SimulationConfig:
         self.loggings = logging
         self.verbose = verbose
         self.name = name
+        self.metrics_path = metrics_path
 
 
 class ServerConfig:

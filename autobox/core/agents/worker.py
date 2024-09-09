@@ -2,12 +2,12 @@ import json
 
 from pydantic import Field
 
-from autobox.core.agent import Agent
+from autobox.core.agents.base import BaseAgent
 from autobox.schemas.message import Message
 from autobox.utils.console import blue, spin
 
 
-class Worker(Agent):
+class Worker(BaseAgent):
     human_instruction: str = Field(default=None)
     backstory: str
 
@@ -53,7 +53,7 @@ class Worker(Agent):
             },
         ]
 
-        completion = spin(f"Agent {self.name} ({self.id}) is thinking...", lambda: self.llm.think(self.name, chat_completion_messages))
+        completion = spin(f"🧠 Agent {self.name} ({self.id}) is thinking...", lambda: self.llm.think(self.name, chat_completion_messages))
 
         value = completion.choices[0].message.content
         self.memory['worker'].append(value)

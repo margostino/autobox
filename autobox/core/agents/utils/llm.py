@@ -24,17 +24,27 @@ class LLM:
         self.openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
         self.parallel_tool_calls = parallel_tool_calls
 
-    def think(self, thinker, messages) -> Tuple[Any, bool, Union[str, None]]:
+    def think(
+        self, thinker, messages, schema=None
+    ) -> Tuple[Any, bool, Union[str, None]]:
         completion_messages = [
             {"role": "system", "content": self.system_prompt},
         ] + messages
 
-        completion = self.openai.chat.completions.create(
-            messages=completion_messages,
-            model=self.model,
-            parallel_tool_calls=self.parallel_tool_calls,
-            temperature=0,
-            tools=self.tools,
-        )
+        if schema:
+            completion = self.openai.beta.chat.completions.parse(
+                messages=completion_messages,
+                model=self.model,
+                temperature=0,
+                response_format=schema,
+            )
+        else:
+            completion = self.openai.chat.completions.create(
+                messages=completion_messages,
+                model=self.model,
+                parallel_tool_calls=self.parallel_tool_calls,
+                temperature=0,
+                tools=self.tools,
+            )
 
         return (completion, True, f"{thinker} knows what to do!")

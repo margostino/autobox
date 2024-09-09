@@ -1,7 +1,7 @@
 import asyncio
 
+from autobox.bootstrap.bootstrap import prepare_simulation
 from autobox.common.logger import print_banner
-from autobox.core.bootstrap import prepare_simulation
 from autobox.utils.config import load_simulation_config, parse_args
 
 

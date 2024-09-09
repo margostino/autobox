@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Dict, Literal
 
 from pydantic import BaseModel, Field
 
@@ -20,3 +20,17 @@ class Metric(BaseModel):
     type: Literal["counter", "gauge", "histogram"]
     unit: str
     value: float = Field(default=0.0)
+
+
+class MetricCalculatorUpdate(BaseModel):
+    metric_name: str
+    value: float
+    thinking_process: str
+
+
+class MetricCalculator(BaseModel):
+    update: list[MetricCalculatorUpdate]
+
+
+class MetricsResponse(BaseModel):
+    metrics: Dict[str, Metric]

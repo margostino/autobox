@@ -6,8 +6,8 @@ from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
 from autobox.common.logger import Logger
+from autobox.core.agents.worker import Worker
 from autobox.core.prompts.metrics_definition import prompt
-from autobox.core.worker import Worker
 from autobox.schemas.metrics import Metric, Metrics
 
 openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)

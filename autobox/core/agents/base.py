@@ -6,20 +6,20 @@ from typing import Dict, List
 from pydantic import BaseModel, Field, model_validator
 
 from autobox.common.logger import Logger
-from autobox.core.llm import LLM
-from autobox.core.messaging import MessageBroker
+from autobox.core.agents.utils.llm import LLM
+from autobox.core.agents.utils.messaging import MessageBroker
 from autobox.schemas.message import Message
 from autobox.utils.console import green
 
 
-class Agent(BaseModel, ABC):
+class BaseAgent(BaseModel, ABC):
+    id: int = Field(init=False)
     name: str
     mailbox: Queue
     message_broker: MessageBroker
     llm: LLM
     task: str
     memory: Dict[str, List[str]] = Field(default={})
-    id: int = Field(init=False)
     is_end: bool = False
     logger: Logger
 

@@ -1,49 +1,23 @@
 import asyncio
 import json
-from asyncio import Queue
-from typing import Dict, List
+from typing import Dict
 
 from openai.types.chat import ChatCompletion
 from pydantic import Field
 
-from autobox.cache.metrics import MetricsCache
-from autobox.common.logger import Logger
-from autobox.core.agent import Agent
-from autobox.core.llm import LLM
-from autobox.core.messaging import MessageBroker
+from autobox.core.agents.base import BaseAgent
 from autobox.schemas.message import Message
 from autobox.utils.console import blue, green, spin_with_handler, yellow
 from autobox.utils.llm import extract_chat_completion
 
 
-class Orchestrator(Agent):
+class Orchestrator(BaseAgent):
     worker_ids: Dict[str, int] = {}
     worker_names: Dict[int, str] = {}
     iterations_counter: int = Field(default=0)
     max_steps: int = Field(default=5)
-    instruction: str = Field(default="")
-    metrics_cache: MetricsCache = Field(default=None)
-
-    def __init__(
-        self,
-        name: str,
-        mailbox: Queue,
-        message_broker: MessageBroker,
-        llm: LLM,
-        worker_ids: Dict[str, int],
-        task: str,
-        memory: Dict[str, List[str]],
-        max_steps: int,
-        instruction: str,
-        logger: Logger,
-        metrics_cache: MetricsCache
-    ):
-        super().__init__(name=name, mailbox=mailbox, message_broker=message_broker, llm=llm, task=task, memory=memory, logger=logger)
-        self.worker_ids = worker_ids
-        self.worker_names = {value: key for key, value in worker_ids.items()}
-        self.max_steps = max_steps
-        self.instruction = instruction
-        self.metrics_cache = metrics_cache
+    instruction: str
+    evaluator_id: int
 
     async def handle_message(self, message: Message):
         if message.from_agent_id is None:
@@ -55,6 +29,18 @@ class Orchestrator(Agent):
             self.logger.info(f"{yellow(f"🗣️ {from_agent_name} said:")} {message.value}")
             self.memory[from_agent_name].append(f"{from_agent_name} said: {message.value}")
             agent_decisions = self.memory[from_agent_name]
+
+        self.message_broker.publish(Message(
+                        to_agent_id=self.evaluator_id,
+                        value=json.dumps(
+                            {
+                                "memory": self.memory,
+                                "iterations_counter": self.iterations_counter,
+                                "is_first": message.from_agent_id is None,
+                            }
+                        ),
+                        from_agent_id=self.id,
+                    ))
 
         chat_completion_messages = [
             {

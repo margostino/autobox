@@ -5,10 +5,12 @@ from uuid import uuid4
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
 
+from autobox.bootstrap.bootstrap import prepare_simulation
+from autobox.cache.metrics import MetricsCache
 from autobox.cache.simulation import SimulationCache
 from autobox.common.logger import Logger, print_banner
-from autobox.core.bootstrap import prepare_simulation
 from autobox.runner.event_loop import EventLoop
+from autobox.schemas.metrics import MetricsResponse
 from autobox.schemas.simulation import (
     InstructionRequest,
     SimulationRequest,
@@ -19,7 +21,8 @@ from autobox.utils.config import load_server_config, parse_args
 
 args = parse_args()
 app = FastAPI()
-cache = SimulationCache()
+simulation_cache = SimulationCache()
+metrics_cache = MetricsCache()
 config = load_server_config(args.config_file)
 logger = Logger(
     name="server", verbose=config.verbose, log_path=config.logging.file_path
@@ -28,7 +31,7 @@ logger = Logger(
 
 @app.get("/simulations", response_model=List[SimulationStatusResponse])
 async def get_simulations():
-    simulations = await cache.get_all_simulations()
+    simulations = await simulation_cache.get_all_simulations()
     # simulation_response = [
     #     SimulationStatusResponse(**simulation.model_dump(exclude={"simulation"}))
     #     for simulation in simulations
@@ -56,7 +59,7 @@ async def get_simulations():
 
 @app.get("/simulations/{simulation_id}", response_model=SimulationStatusResponse)
 async def get_simulation_by_id(simulation_id: str):
-    simulation_status = await cache.get_simulation_status(simulation_id)
+    simulation_status = await simulation_cache.get_simulation_status(simulation_id)
     if simulation_status is not None:
         return SimulationStatusResponse(
             simulation_id=simulation_status.simulation_id,
@@ -77,9 +80,17 @@ async def get_simulation_by_id(simulation_id: str):
         raise HTTPException(status_code=404, detail="simulation not found")
 
 
+@app.get("/simulations/{simulation_id}/metrics", response_model=MetricsResponse)
+async def get_metrics_by_simulation_id(simulation_id: str):
+    metrics = await metrics_cache.get_all()
+    return MetricsResponse(metrics=metrics)
+
+
 @app.post("/simulations/{simulation_id}/abort")
 async def abort_simulation(simulation_id: str):
-    simulation_status = await cache.update_simulation_status(simulation_id, "aborted")
+    simulation_status = await simulation_cache.update_simulation_status(
+        simulation_id, "aborted"
+    )
     if simulation_status is not None:
         simulation_status.simulation.abort()
         return {"simulation_id": simulation_id, "status": "aborted"}
@@ -91,7 +102,7 @@ async def abort_simulation(simulation_id: str):
 async def update_simulation_instruction(
     simulation_id: str, agent_id: str, request: InstructionRequest, response: Response
 ):
-    simulation_status = await cache.get_simulation_status(simulation_id)
+    simulation_status = await simulation_cache.get_simulation_status(simulation_id)
     if simulation_status is None:
         raise HTTPException(status_code=404, detail="simulation not found")
     # TODO: validate if agent_id exists
@@ -109,11 +120,13 @@ async def post_simulations(
     simulation_id = str(uuid4())
 
     try:
-        simulation = prepare_simulation(request)
-        await cache.init_simulation(simulation_id, "in progress", request, simulation)
+        simulation = prepare_simulation(request, metrics_cache)
+        await simulation_cache.init_simulation(
+            simulation_id, "in progress", request, simulation
+        )
         executor = ThreadPoolExecutor(max_workers=1)
         event_loop = EventLoop(
-            simulation_id=simulation_id, cache=cache, simulation=simulation
+            simulation_id=simulation_id, cache=simulation_cache, simulation=simulation
         )
         background_tasks.add_task(executor.submit, event_loop.run)
 
@@ -130,7 +143,9 @@ async def post_simulations(
         }
     except Exception as e:
         logger.error("Error preparing simulation: %s", e)
-        await cache.update_simulation_status(simulation_id, "failed", datetime.now())
+        await simulation_cache.update_simulation_status(
+            simulation_id, "failed", datetime.now()
+        )
         return {"status": "failed", "simulation_id": simulation_id, "error": str(e)}
 
 

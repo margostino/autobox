@@ -1,5 +1,5 @@
 import asyncio
-from typing import List
+from typing import ClassVar, List
 
 from pydantic import BaseModel
 
@@ -17,19 +17,23 @@ class Network(BaseModel):
     workers: List[Worker]
     orchestrator: Orchestrator
     evaluator: Evaluator
-    logger: Logger
+
+    logger: ClassVar[Logger] = Logger.get_instance()
 
     def register_agent(self, worker: Worker):
         self.workers.append(worker)
 
-    async def run(self):
+    async def run(self, simulation_id: str):
         self.message_broker.publish(
             Message(value=None, to_agent_id=self.orchestrator.id)
         )
         tasks = (
-            [asyncio.create_task(self.orchestrator.run())]
-            + [asyncio.create_task(self.evaluator.run())]
-            + [asyncio.create_task(worker.run()) for worker in self.workers]
+            [asyncio.create_task(self.orchestrator.run(simulation_id))]
+            + [asyncio.create_task(self.evaluator.run(simulation_id))]
+            + [
+                asyncio.create_task(worker.run(simulation_id))
+                for worker in self.workers
+            ]
         )
         await asyncio.gather(*tasks)
 

@@ -33,4 +33,4 @@ class MetricCalculator(BaseModel):
 
 
 class MetricsResponse(BaseModel):
-    metrics: Dict[str, Metric]
+    metrics: Dict[str, Metric] = Field(default_factory=dict)

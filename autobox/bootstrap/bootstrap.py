@@ -1,14 +1,18 @@
 import asyncio
 import json
+import os
 
-from autobox.cache.metrics import MetricsCache
+from openai import OpenAI
+
+from autobox.bootstrap.metrics.builder import define_metrics
+from autobox.bootstrap.metrics.loader import load_metrics
+from autobox.cache.cache import Cache
 from autobox.common.logger import Logger
 from autobox.core.agents.evaluator import Evaluator
 from autobox.core.agents.orchestrator import Orchestrator
 from autobox.core.agents.utils.llm import LLM
 from autobox.core.agents.utils.messaging import MessageBroker
 from autobox.core.agents.worker import Worker
-from autobox.core.metric_collector import MetricCollector
 from autobox.core.network import Network
 from autobox.core.prompts.metrics_calculator import prompt as metrics_calculator_prompt
 from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
@@ -19,24 +23,16 @@ from autobox.schemas.simulation import SimulationRequest
 from autobox.utils.normalization import value_to_id
 
 
-def prepare_simulation(
-    config: SimulationRequest, metrics_cache: MetricsCache
-) -> Simulation:
-    simulation_config = config.simulation
-    orchestrator_config = config.orchestrator
-    logging_config = config.simulation.logging
+async def prepare_simulation(request: SimulationRequest) -> Simulation:
+    logger = Logger.get_instance()
 
-    logger = Logger(
-        name=simulation_config.name,
-        verbose=simulation_config.verbose,
-        log_path=logging_config.file_path,
-    )
+    openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
 
+    simulation_config = request.simulation
+    orchestrator_config = request.orchestrator
     simulation_name_id = value_to_id(simulation_config.name)
 
     logger.info("Bootstrapping simulation...")
-
-    metric_collector = MetricCollector(logger=logger)
 
     message_broker = MessageBroker()
 
@@ -44,7 +40,7 @@ def prepare_simulation(
     worker_ids = {}
     worker_names = {}
     workers_memory_for_orchestrator = {}
-    for agent in config.agents:
+    for agent in request.agents:
         worker = Worker(
             name=agent.name,
             mailbox=asyncio.Queue(maxsize=agent.mailbox.max_size),
@@ -63,16 +59,20 @@ def prepare_simulation(
 
     tools = get_tools(worker_names)
 
-    metrics = metric_collector.load_metrics_for_simulation(
+    metrics = load_metrics(
         name=simulation_name_id,
         path=simulation_config.metrics_path,
-        workers=workers,
-        orchestrator_name=orchestrator_config.name,
-        orchestrator_instruction=orchestrator_config.instruction,
-        task=simulation_config.task,
     )
-
-    metrics_cache.init_metrics(metrics)
+    if metrics is None:
+        metrics = define_metrics(
+            name=simulation_name_id,
+            path=simulation_config.metrics_path,
+            workers=workers,
+            orchestrator_name=orchestrator_config.name,
+            orchestrator_instruction=orchestrator_config.instruction,
+            task=simulation_config.task,
+            openai=openai,
+        )
 
     metrics_definitions = json.dumps(
         {key: metric.model_dump(exclude="value") for key, metric in metrics.items()}
@@ -83,7 +83,6 @@ def prepare_simulation(
         mailbox=asyncio.Queue(maxsize=orchestrator_config.mailbox.max_size),
         task=simulation_config.task,
         message_broker=message_broker,
-        metrics_cache=metrics_cache,
         logger=logger,
         llm=LLM(
             metrics_calculator_prompt(
@@ -98,6 +97,7 @@ def prepare_simulation(
             )
         ),
     )
+    # evaluator.set_cache(metrics)
 
     orchestrator = Orchestrator(
         name=orchestrator_config.name,
@@ -116,7 +116,6 @@ def prepare_simulation(
         worker_ids=worker_ids,
         worker_names={value: key for key, value in worker_ids.items()},
         task=simulation_config.task,
-        logger=logger,
         memory={"orchestrator": [], **workers_memory_for_orchestrator},
         max_steps=simulation_config.max_steps,
         instruction=orchestrator_config.instruction,
@@ -131,11 +130,8 @@ def prepare_simulation(
         orchestrator=orchestrator,
         evaluator=evaluator,
         message_broker=message_broker,
-        logger=logger,
     )
 
-    return Simulation(
-        network=network,
-        timeout=config.simulation.timeout,
-        logger=logger,
-    )
+    simulation = Simulation(network=network, timeout=request.simulation.timeout)
+    await Cache.simulation().init_simulation("created", request, simulation, metrics)
+    return simulation

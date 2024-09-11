@@ -13,6 +13,13 @@ from autobox.schemas.simulation import (
 def parse_args():
     parser = argparse.ArgumentParser(description="Autobox")
     parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["server", "local"],
+        required=True,
+        help="Mode to run the application: 'server' to start a server, 'local' to run tasks on the local machine",
+    )
+    parser.add_argument(
         "--config-file",
         type=str,
         required=True,
@@ -75,11 +82,13 @@ def load_server_config(file_path: str = "server.toml") -> ServerConfig:
         config = tomllib.load(f)
         server_config = config.get("server", {})
         logging_config = config.get("logging", {})
-        logging = LoggingConfig(file_path=logging_config.get("file_path"))
+        logging = LoggingConfig(
+            file_path=logging_config.get("file_path"),
+            verbose=logging_config.get("verbose", False),
+        )
         return ServerConfig(
             host=server_config.get("host", ""),
             port=server_config.get("port", 0),
             reload=server_config.get("reload", False),
-            verbose=server_config.get("verbose", False),
             logging=logging,
         )

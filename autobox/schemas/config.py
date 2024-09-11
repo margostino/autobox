@@ -11,6 +11,18 @@ class MailBoxConfig:
         self.max_size = max_size
 
 
+class EvaluatorConfig:
+    def __init__(
+        self,
+        name: str,
+        mailbox: MailBoxConfig,
+        llm: Optional[LLMConfig] = None,
+    ):
+        self.name = name
+        self.mailbox = mailbox
+        self.llm = llm
+
+
 class OrchestratorConfig:
     def __init__(
         self,
@@ -26,8 +38,9 @@ class OrchestratorConfig:
 
 
 class LoggingConfig:
-    def __init__(self, file_path: Optional[str] = None):
+    def __init__(self, file_path: Optional[str] = None, verbose: bool = False):
         self.file_path = file_path
+        self.verbose = verbose
 
 
 class AgentConfig:
@@ -54,7 +67,7 @@ class SimulationConfig:
         logging: LoggingConfig,
         agents: List[AgentConfig],
         orchestrator: OrchestratorConfig,
-        verbose: bool = False,
+        evaluator: EvaluatorConfig,
         metrics_path: str = None,
     ):
         self.max_steps = max_steps
@@ -63,22 +76,14 @@ class SimulationConfig:
         self.orchestrator = orchestrator
         self.timeout = timeout
         self.loggings = logging
-        self.verbose = verbose
         self.name = name
         self.metrics_path = metrics_path
+        self.evaluator = evaluator
 
 
 class ServerConfig:
-    def __init__(
-        self,
-        host: str,
-        port: int,
-        reload: bool,
-        logging: LoggingConfig,
-        verbose: bool = False,
-    ):
+    def __init__(self, host: str, port: int, reload: bool, logging: LoggingConfig):
         self.host = host
         self.port = port
         self.reload = reload
         self.logging = logging
-        self.verbose = verbose

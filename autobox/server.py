@@ -1,157 +1,87 @@
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+import sys
 from typing import List
-from uuid import uuid4
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
+from fastapi import BackgroundTasks, FastAPI, Response
 
-from autobox.bootstrap.bootstrap import prepare_simulation
-from autobox.cache.metrics import MetricsCache
-from autobox.cache.simulation import SimulationCache
-from autobox.common.logger import Logger, print_banner
-from autobox.runner.event_loop import EventLoop
+from autobox.api.abort_simulation import handle_abort_simulation
+from autobox.api.create_simulation import handle_create_simulation
+from autobox.api.get_metrics_by_simulation_id import handle_get_metrics_by_simulation_id
+from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
+from autobox.api.get_simulations import handle_get_simulations
+from autobox.api.ping import handle_ping
+from autobox.api.update_agent_instruction import handle_update_simulation_instruction
+from autobox.common.logger import Logger
+from autobox.schemas.config import ServerConfig
 from autobox.schemas.metrics import MetricsResponse
 from autobox.schemas.simulation import (
     InstructionRequest,
     SimulationRequest,
-    SimulationStatusAgentResponse,
     SimulationStatusResponse,
 )
-from autobox.utils.config import load_server_config, parse_args
-
-args = parse_args()
-app = FastAPI()
-simulation_cache = SimulationCache()
-metrics_cache = MetricsCache()
-config = load_server_config(args.config_file)
-logger = Logger(
-    name="server", verbose=config.verbose, log_path=config.logging.file_path
-)
 
 
-@app.get("/simulations", response_model=List[SimulationStatusResponse])
-async def get_simulations():
-    simulations = await simulation_cache.get_all_simulations()
-    # simulation_response = [
-    #     SimulationStatusResponse(**simulation.model_dump(exclude={"simulation"}))
-    #     for simulation in simulations
-    # ]
-    simulation_response = [
-        SimulationStatusResponse(
-            simulation_id=simulation_status.simulation_id,
-            status=simulation_status.status,
-            details=simulation_status.details,
-            started_at=simulation_status.started_at,
-            finished_at=simulation_status.finished_at,
-            agents=[
-                SimulationStatusAgentResponse(id=agent_id, name=agent_name)
-                for agent_name, agent_id in simulation_status.simulation.network.orchestrator.worker_ids.items()
-            ],
-            orchestrator=SimulationStatusAgentResponse(
-                id=simulation_status.simulation.network.orchestrator.id,
-                name=simulation_status.simulation.network.orchestrator.name,
-            ),
+def create_app():
+    app = FastAPI()
+    logger = Logger.get_instance()
+
+    @app.get("/ping")
+    async def ping():
+        logger.info("Ping received.")
+        return handle_ping()
+
+    @app.get("/simulations", response_model=List[SimulationStatusResponse])
+    async def get_simulations():
+        return await handle_get_simulations()
+
+    @app.get("/simulations/{simulation_id}", response_model=SimulationStatusResponse)
+    async def get_simulation_by_id(simulation_id: str):
+        return await handle_get_simulation_by_id(simulation_id)
+
+    @app.get("/simulations/{simulation_id}/metrics", response_model=MetricsResponse)
+    async def get_metrics_by_simulation_id(simulation_id: str):
+        return await handle_get_metrics_by_simulation_id(simulation_id)
+
+    @app.post("/simulations/{simulation_id}/abort")
+    async def abort_simulation(simulation_id: str):
+        return await handle_abort_simulation(simulation_id)
+
+    @app.post("/simulations/{simulation_id}/agents/{agent_id}/instruction")
+    async def update_simulation_instruction(
+        simulation_id: str,
+        agent_id: str,
+        request: InstructionRequest,
+        response: Response,
+    ):
+        return await handle_update_simulation_instruction(
+            simulation_id, agent_id, request, response
         )
-        for simulation_status in simulations
-    ]
-    return simulation_response
+
+    @app.post("/simulations")
+    async def post_simulations(
+        request: SimulationRequest,
+        background_tasks: BackgroundTasks,
+        response: Response,
+    ):
+        return await handle_create_simulation(request, background_tasks, response)
+
+    return app
 
 
-@app.get("/simulations/{simulation_id}", response_model=SimulationStatusResponse)
-async def get_simulation_by_id(simulation_id: str):
-    simulation_status = await simulation_cache.get_simulation_status(simulation_id)
-    if simulation_status is not None:
-        return SimulationStatusResponse(
-            simulation_id=simulation_status.simulation_id,
-            status=simulation_status.status,
-            details=simulation_status.details,
-            started_at=simulation_status.started_at,
-            finished_at=simulation_status.finished_at,
-            agents=[
-                SimulationStatusAgentResponse(id=agent_id, name=agent_name)
-                for agent_name, agent_id in simulation_status.simulation.network.orchestrator.worker_ids.items()
-            ],
-            orchestrator=SimulationStatusAgentResponse(
-                id=simulation_status.simulation.network.orchestrator.id,
-                name=simulation_status.simulation.network.orchestrator.name,
-            ),
-        )
-    else:
-        raise HTTPException(status_code=404, detail="simulation not found")
-
-
-@app.get("/simulations/{simulation_id}/metrics", response_model=MetricsResponse)
-async def get_metrics_by_simulation_id(simulation_id: str):
-    metrics = await metrics_cache.get_all()
-    return MetricsResponse(metrics=metrics)
-
-
-@app.post("/simulations/{simulation_id}/abort")
-async def abort_simulation(simulation_id: str):
-    simulation_status = await simulation_cache.update_simulation_status(
-        simulation_id, "aborted"
-    )
-    if simulation_status is not None:
-        simulation_status.simulation.abort()
-        return {"simulation_id": simulation_id, "status": "aborted"}
-    else:
-        raise HTTPException(status_code=404, detail="simulation not found")
-
-
-@app.post("/simulations/{simulation_id}/agents/{agent_id}/instruction")
-async def update_simulation_instruction(
-    simulation_id: str, agent_id: str, request: InstructionRequest, response: Response
-):
-    simulation_status = await simulation_cache.get_simulation_status(simulation_id)
-    if simulation_status is None:
-        raise HTTPException(status_code=404, detail="simulation not found")
-    # TODO: validate if agent_id exists
-    simulation_status.simulation.network.send_intruction_for_workers(
-        agent_id=int(agent_id), instruction=request.instruction
-    )
-    response.status_code = status.HTTP_200_OK
-    return response
-
-
-@app.post("/simulations")
-async def post_simulations(
-    request: SimulationRequest, background_tasks: BackgroundTasks, response: Response
-):
-    simulation_id = str(uuid4())
-
-    try:
-        simulation = prepare_simulation(request, metrics_cache)
-        await simulation_cache.init_simulation(
-            simulation_id, "in progress", request, simulation
-        )
-        executor = ThreadPoolExecutor(max_workers=1)
-        event_loop = EventLoop(
-            simulation_id=simulation_id, cache=simulation_cache, simulation=simulation
-        )
-        background_tasks.add_task(executor.submit, event_loop.run)
-
-        # loop = asyncio.get_event_loop()
-        # loop.run_in_executor(executor, run_async_in_thread, run_simulation_task, request)
-        response.status_code = status.HTTP_201_CREATED
-        return {
-            "status": "in progress",
-            "simulation_id": simulation_id,
-            "agents": [
-                {"name": agent.name, "id": agent.id}
-                for agent in simulation.network.workers
-            ],
-        }
-    except Exception as e:
-        logger.error("Error preparing simulation: %s", e)
-        await simulation_cache.update_simulation_status(
-            simulation_id, "failed", datetime.now()
-        )
-        return {"status": "failed", "simulation_id": simulation_id, "error": str(e)}
-
-
-if __name__ == "__main__":
+def start_server(config: ServerConfig):
     import uvicorn
 
-    print_banner()
+    logger = Logger.get_instance()
 
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
+    try:
+        logger.info("Starting Autobox server...")
+
+        uvicorn.run(
+            "autobox.server:create_app",  # Pass the app factory as an import string
+            host=config.host,
+            port=config.port,
+            reload=config.reload,  # Use reload only in development mode
+            factory=True,  # Enable factory mode to use create_app
+        )
+    except Exception as e:
+        logger.error(f"Server encountered an error: {str(e)}")
+        sys.exit(1)

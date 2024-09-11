@@ -2,7 +2,7 @@
 host = "127.0.0.1"
 port = 8000
 reload = true
-verbose = true
 
 [logging]
 file_path = "/Users/martin.dagostino/workspace/margostino/autobox/logs"
+verbose = true

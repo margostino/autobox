@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from asyncio import Queue
-from typing import Dict, List
+from typing import ClassVar, Dict, List
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -14,6 +14,7 @@ from autobox.utils.console import green
 
 class BaseAgent(BaseModel, ABC):
     id: int = Field(init=False)
+    simulation_id: str = Field(default=None)
     name: str
     mailbox: Queue
     message_broker: MessageBroker
@@ -21,7 +22,8 @@ class BaseAgent(BaseModel, ABC):
     task: str
     memory: Dict[str, List[str]] = Field(default={})
     is_end: bool = False
-    logger: Logger
+
+    logger: ClassVar[Logger] = Logger.get_instance()
 
     @model_validator(mode="before")
     @classmethod
@@ -39,7 +41,8 @@ class BaseAgent(BaseModel, ABC):
     async def handle_message(self, message: Message):
         pass
 
-    async def run(self):
+    async def run(self, simulation_id: str):
+        self.simulation_id = simulation_id
         self.logger.info(f"{green(f'🟢 Agent {self.name} ({self.id}) is running')}")
         while not self.is_end:
             if not self.mailbox.empty():

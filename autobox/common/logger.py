@@ -2,8 +2,6 @@ import logging
 import sys
 from typing import Optional
 
-from pydantic import BaseModel, Field, PrivateAttr
-
 from autobox.utils.normalization import value_to_id
 
 
@@ -21,47 +19,61 @@ def print_banner():
     )
 
 
-class Logger(BaseModel):
-    name: str
-    verbose: bool = Field(default=False)
-    log_path: Optional[str] = None
-    log_file: Optional[str] = None
-    _logger: logging.Logger = PrivateAttr()
+class Logger:
+    _instance: Optional["Logger"] = None
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        if self.log_file is None:
-            # self.log_file = datetime.now().strftime("%Y%m%d%H%M") + ".log"
-            self.log_file = f"{value_to_id(self.name)}.log"
+    def __init__(
+        self,
+        name: str = "autobox",
+        verbose: bool = False,
+        log_path: Optional[str] = None,
+        log_file: Optional[str] = None,
+    ):
+        self.name = name
+        self.verbose = verbose
+        self.log_path = log_path
+        self.log_file = log_file
 
+        stdout_handler = logging.StreamHandler(stream=sys.stdout)
+        stdout_handler.setLevel(logging.DEBUG)
         self._logger = logging.getLogger(self.name)
         self._logger.setLevel(logging.DEBUG)
 
-        stdout_handler = logging.StreamHandler(stream=sys.stdout)
-        err_handler = logging.FileHandler(f"{self.log_path}/{self.log_file}")
-        stdout_handler.setLevel(logging.DEBUG)
-        err_handler.setLevel(logging.DEBUG)
-
-        # fmt = logging.Formatter(
-        #     "%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >>> %(message)s"
-        # )
         fmt = logging.Formatter(
             "%(asctime)s | %(levelname)s | %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         stdout_handler.setFormatter(fmt)
-        err_handler.setFormatter(fmt)
         self._logger.addHandler(stdout_handler)
-        self._logger.addHandler(err_handler)
+
+        if self.log_path:
+            if self.log_file is None:
+                self.log_file = f"{value_to_id(self.name)}.log"
+
+            err_handler = logging.FileHandler(f"{self.log_path}/{self.log_file}")
+            err_handler.setLevel(logging.DEBUG)
+            err_handler.setFormatter(fmt)
+            self._logger.addHandler(err_handler)
+
+        Logger._instance = self
 
     def info(self, message: str):
-        if self.verbose:
-            print(message)
-
+        # if self.verbose:
+        #     print(message)
         self._logger.info(message)
 
     def error(self, message: str, exception: Exception = None):
-        if self.verbose:
-            print(message)
-
+        # if self.verbose:
+        #     print(message)
         self._logger.error(message, exc_info=exception)
+
+    @classmethod
+    def get_instance(cls, **kwargs) -> "Logger":
+        if cls._instance is None:
+            cls._instance = cls(**kwargs)
+        return cls._instance
+
+    @classmethod
+    def log(cls, message: str):
+        logger = cls.get_instance()
+        logger.info(message)

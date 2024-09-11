@@ -1,12 +1,12 @@
 from typing import Dict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from autobox.schemas.metrics import Metric
 
 
 class MetricsCache(BaseModel):
-    metrics: Dict[str, Metric] = Field(default_factory=dict)
+    metrics: Dict[str, Metric] = {}
 
     def update(self, metric_name: str, value: float):
         metric = self.metrics.get(metric_name, None)

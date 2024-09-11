@@ -1,9 +1,10 @@
 import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 from autobox.core.simulation import Simulation
+from autobox.schemas.metrics import Metric
 
 
 class MailboxConfig(BaseModel):
@@ -16,6 +17,7 @@ class LLMConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     file_path: Optional[str] = Field(default=None)
+    verbose: bool = Field(default=False)
 
 
 class AgentConfig(BaseModel):
@@ -33,13 +35,17 @@ class OrchestratorConfig(BaseModel):
     llm: LLMConfig
 
 
+class EvaluatorConfig(BaseModel):
+    name: str
+    mailbox: MailboxConfig
+    llm: LLMConfig
+
+
 class SimulationConfig(BaseModel):
     name: str
     max_steps: int
     timeout: int
     task: str
-    logging: LoggingConfig
-    verbose: bool = Field(default=False)
     metrics_path: str
 
     class Config:
@@ -47,8 +53,10 @@ class SimulationConfig(BaseModel):
 
 
 class SimulationRequest(BaseModel):
+    logging: LoggingConfig
     simulation: SimulationConfig
     orchestrator: OrchestratorConfig
+    evaluator: EvaluatorConfig
     agents: List[AgentConfig]
 
 
@@ -63,6 +71,7 @@ class SimulationStatus(BaseModel):
     started_at: datetime
     finished_at: datetime = Field(default=None)
     simulation: Simulation = Field(default=None)
+    metrics: Dict[str, Metric] = Field(default={})
 
     class Config:
         arbitrary_types_allowed = True

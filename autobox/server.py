@@ -6,6 +6,7 @@ from fastapi import BackgroundTasks, FastAPI, Response
 from autobox.api.abort_simulation import handle_abort_simulation
 from autobox.api.create_simulation import handle_create_simulation
 from autobox.api.get_metrics_by_simulation_id import handle_get_metrics_by_simulation_id
+from autobox.api.get_prometheus_metrics import handle_prometheus_metrics
 from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
 from autobox.api.get_simulations import handle_get_simulations
 from autobox.api.ping import handle_ping
@@ -64,6 +65,14 @@ def create_app():
     ):
         return await handle_create_simulation(request, background_tasks, response)
 
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        logger.info("Server is shutting down...")
+
+    @app.get("/metrics")
+    async def prometheus_metrics():
+        return handle_prometheus_metrics()
+
     return app
 
 
@@ -71,10 +80,9 @@ def start_server(config: ServerConfig):
     import uvicorn
 
     logger = Logger.get_instance()
+    logger.info("Starting Autobox server...")
 
     try:
-        logger.info("Starting Autobox server...")
-
         uvicorn.run(
             "autobox.server:create_app",  # Pass the app factory as an import string
             host=config.host,
@@ -85,3 +93,5 @@ def start_server(config: ServerConfig):
     except Exception as e:
         logger.error(f"Server encountered an error: {str(e)}")
         sys.exit(1)
+    finally:
+        logger.info("Autobox server has stopped.")

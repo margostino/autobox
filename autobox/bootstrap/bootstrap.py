@@ -19,6 +19,8 @@ from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
 from autobox.core.prompts.tools.worker import get_tools
 from autobox.core.prompts.worker import prompt as agent_prompt
 from autobox.core.simulation import Simulation
+from autobox.metrics.grafana import create_grafana_dashboard
+from autobox.metrics.prometheus import create_prometheus_metrics
 from autobox.schemas.simulation import SimulationRequest
 from autobox.utils.normalization import value_to_id
 
@@ -74,8 +76,16 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
             openai=openai,
         )
 
+    create_prometheus_metrics(metrics)
+    logger.info("Metrics loaded into Prometheus")
+    grafana_response = await create_grafana_dashboard(simulation_name_id, metrics)
+    logger.info(f"Grafana dashboard created: {grafana_response['status']}")
+
     metrics_definitions = json.dumps(
-        {key: metric.model_dump(exclude="value") for key, metric in metrics.items()}
+        {
+            key: metric.model_dump(exclude={"value", "collector_registry"})
+            for key, metric in metrics.items()
+        }
     )
 
     evaluator = Evaluator(
@@ -90,14 +100,15 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
                 agents={worker.name: worker.backstory for worker in workers},
                 metrics=json.dumps(
                     {
-                        metric.name: metric.model_dump_json()
+                        metric.name: metric.model_dump_json(
+                            exclude="collector_registry"
+                        )
                         for metric in metrics.values()
                     }
                 ),
             )
         ),
     )
-    # evaluator.set_cache(metrics)
 
     orchestrator = Orchestrator(
         name=orchestrator_config.name,

@@ -22,7 +22,8 @@ class Evaluator(BaseAgent):
             return
 
         metrics = {
-            name: metric.model_dump_json() for name, metric in cache.metrics.items()
+            name: metric.model_dump_json(exclude="collector_registry")
+            for name, metric in cache.metrics.items()
         }
         chat_completion_messages = [
             {
@@ -46,3 +47,15 @@ class Evaluator(BaseAgent):
 
         for metric in metrics_update.update:
             cache.metrics[metric.metric_name].value = metric.value
+
+            #  TODO: make it safe and add more types like summary
+            if cache.metrics[metric.metric_name].type == "counter":
+                cache.metrics[metric.metric_name].collector_registry.inc(
+                    metric.value
+                )  # TODO: fix misinterpretation of value (e.g. 5 from LLM should be 1 always?)
+            elif cache.metrics[metric.metric_name].type == "gauge":
+                cache.metrics[metric.metric_name].collector_registry.set(metric.value)
+            elif cache.metrics[metric.metric_name].type == "histogram":
+                cache.metrics[metric.metric_name].collector_registry.observe(
+                    metric.value
+                )

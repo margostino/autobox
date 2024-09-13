@@ -1,5 +1,6 @@
 from typing import Dict, Literal
 
+from prometheus_client import CollectorRegistry
 from pydantic import BaseModel, Field
 
 
@@ -20,6 +21,10 @@ class Metric(BaseModel):
     type: Literal["counter", "gauge", "histogram"]
     unit: str
     value: float = Field(default=0.0)
+    collector_registry: CollectorRegistry = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class MetricCalculatorUpdate(BaseModel):

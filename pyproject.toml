@@ -15,6 +15,9 @@ halo = "^0.0.31"
 fastapi = "^0.111.1"
 uvicorn = "^0.30.3"
 watchgod = "^0.8.2"
+docker = "^7.1.0"
+grafana-client = "^4.1.0"
+prometheus-client = "^0.20.0"
 
 
 [build-system]

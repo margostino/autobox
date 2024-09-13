@@ -76,11 +76,6 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
             openai=openai,
         )
 
-    create_prometheus_metrics(metrics)
-    logger.info("Metrics loaded into Prometheus")
-    grafana_response = await create_grafana_dashboard(simulation_name_id, metrics)
-    logger.info(f"Grafana dashboard created: {grafana_response['status']}")
-
     metrics_definitions = json.dumps(
         {
             key: metric.model_dump(exclude={"value", "collector_registry"})
@@ -145,4 +140,15 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
 
     simulation = Simulation(network=network, timeout=request.simulation.timeout)
     await Cache.simulation().init_simulation("created", request, simulation, metrics)
+
+    create_prometheus_metrics(metrics)
+    logger.info("Metrics loaded into Prometheus")
+    grafana_response = await create_grafana_dashboard(
+        simulation_name_id, simulation.id, metrics
+    )
+    logger.info(f"Grafana dashboard created: {grafana_response['status']}")
+    # TODO: do it properly and support remote servers
+    dashboard_url = f"http://localhost:3000{grafana_response['url']}?orgId=1&refresh=5s"
+    logger.info(f"Dashboard URL: {dashboard_url}")
+
     return simulation

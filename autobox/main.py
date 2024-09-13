@@ -4,7 +4,7 @@ import sys
 from autobox.cache.cache import Cache
 from autobox.cli import run_local_simulation
 from autobox.common.logger import Logger, print_banner
-from autobox.metrics.resources import start_grafana_container
+from autobox.metrics.resources import start_grafana_and_prometheus_containers
 from autobox.server import start_server
 from autobox.utils.config import load_server_config, load_simulation_config, parse_args
 
@@ -27,7 +27,7 @@ async def main():
 
     logger.info(f"Using configuration file ({mode} mode): {args.config_file}")
 
-    container = start_grafana_container()
+    grafana_container, prometheus_container = start_grafana_and_prometheus_containers()
 
     Cache.init()
 
@@ -39,8 +39,11 @@ async def main():
         logger.error(f"Invalid mode specified: {mode}. Use 'local' or 'server'.")
         sys.exit(1)
 
-    container.stop()
-    container.remove()
+    # TODO: parallelize and centralize cleanup resources
+    grafana_container.stop()
+    grafana_container.remove()
+    prometheus_container.stop()
+    prometheus_container.remove()
 
 
 if __name__ == "__main__":

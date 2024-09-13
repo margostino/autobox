@@ -33,7 +33,9 @@ def create_panel(metric: Metric, panel_id: int, x: int, y: int):
     return panel
 
 
-async def create_grafana_dashboard(simulation_name_id: str, metrics: Dict[str, Metric]):
+async def create_grafana_dashboard(
+    simulation_name_id: str, simulation_id: str, metrics: Dict[str, Metric]
+):
     panels = []
     panel_id = 1
     x, y = 0, 0
@@ -51,7 +53,7 @@ async def create_grafana_dashboard(simulation_name_id: str, metrics: Dict[str, M
     new_dashboard = {
         "dashboard": {
             "id": None,
-            "title": f"{simulation_name_id} Metrics",
+            "title": f"{simulation_name_id} ({simulation_id})",
             "panels": panels,
             "timezone": "browser",
             "schemaVersion": 16,

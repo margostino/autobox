@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import List
 
@@ -21,9 +22,17 @@ from autobox.schemas.simulation import (
 )
 
 
+class ExcludeEndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/metrics" not in record.getMessage()
+
+
 def create_app():
     app = FastAPI()
     logger = Logger.get_instance()
+
+    uvicorn_logger = logging.getLogger("uvicorn.access")
+    uvicorn_logger.addFilter(ExcludeEndpointFilter())
 
     @app.get("/ping")
     async def ping():

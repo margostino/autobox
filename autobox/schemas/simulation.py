@@ -16,7 +16,8 @@ class LLMConfig(BaseModel):
 
 
 class LoggingConfig(BaseModel):
-    file_path: Optional[str] = Field(default=None)
+    log_path: Optional[str] = Field(default=None)
+    log_file: Optional[str] = Field(default=None)
     verbose: bool = Field(default=False)
 
 

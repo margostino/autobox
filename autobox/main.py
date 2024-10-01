@@ -3,15 +3,13 @@ import sys
 
 from autobox.cache.cache import Cache
 from autobox.cli import run_local_simulation
-from autobox.common.logger import Logger, print_banner
+from autobox.common.logger import Logger
 from autobox.metrics.resources import start_grafana_and_prometheus_containers
 from autobox.server import start_server
 from autobox.utils.config import load_server_config, load_simulation_config, parse_args
 
 
 async def main():
-    print_banner()
-
     args = parse_args()
     mode = args.mode
 
@@ -24,6 +22,8 @@ async def main():
     logger = Logger(
         name=mode, verbose=config.logging.verbose, log_path=config.logging.file_path
     )
+
+    logger.print_banner()
 
     logger.info(f"Using configuration file ({mode} mode): {args.config_file}")
 

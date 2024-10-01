@@ -18,7 +18,9 @@ class Evaluator(BaseAgent):
         cache = await Cache.simulation().get_simulation_status(self.simulation_id)
         json_message_value = json.loads(message.value)
         if json_message_value["is_first"]:
-            print(f"📬 Evaluator {self.name} ({self.id}) preparing initial message...")
+            self.logger.info(
+                f"📬 Evaluator {self.name} ({self.id}) preparing initial message..."
+            )
             return
 
         metrics = {

@@ -4,6 +4,7 @@ from typing import Dict, List
 
 from openai import OpenAI
 
+from autobox.common.logger import Logger
 from autobox.core.agents.worker import Worker
 from autobox.core.prompts.metrics_definition import prompt
 from autobox.schemas.metrics import Metric, Metrics
@@ -19,6 +20,7 @@ def define_metrics(
     orchestrator_name: str,
     orchestrator_instruction: str,
     openai: OpenAI,
+    logger: Logger,
 ) -> Dict[str, Metric]:
 
     full_path = os.path.join(path, f"{name}.json")
@@ -60,7 +62,6 @@ def define_metrics(
         with open(full_path, "w", encoding="utf-8") as file:
             json.dump(metrics, file, indent=4)
     except IOError as e:
-        # logger.error(f"Error saving metrics to file: {e}")
-        print(f"Error saving metrics to file: {e}")
+        logger.error(f"Error saving metrics to file: {e}")
 
     return metrics

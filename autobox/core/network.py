@@ -1,5 +1,5 @@
 import asyncio
-from typing import ClassVar, List
+from typing import List
 
 from pydantic import BaseModel
 
@@ -17,8 +17,10 @@ class Network(BaseModel):
     workers: List[Worker]
     orchestrator: Orchestrator
     evaluator: Evaluator
+    logger: Logger
 
-    logger: ClassVar[Logger] = Logger.get_instance()
+    class Config:
+        arbitrary_types_allowed = True
 
     def register_agent(self, worker: Worker):
         self.workers.append(worker)
@@ -41,7 +43,7 @@ class Network(BaseModel):
         for worker in self.workers:
             worker.is_end = True
         self.orchestrator.is_end = True
-        print(f"{blue('🔴 Network stopped.')}")
+        self.logger.info(f"{blue('🔴 Network stopped.')}")
 
     def send_intruction_for_workers(self, agent_id: int, instruction: str):
         self.message_broker.publish(Message(value=instruction, to_agent_id=agent_id))

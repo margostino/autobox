@@ -26,7 +26,13 @@ from autobox.utils.normalization import value_to_id
 
 
 async def prepare_simulation(request: SimulationRequest) -> Simulation:
-    logger = Logger.get_instance()
+    log_name = value_to_id(request.simulation.name)
+    logger = Logger(
+        name=log_name,
+        log_path=request.logging.log_path,
+        log_file=request.logging.log_file,
+        verbose=request.logging.verbose,
+    )
 
     openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
 
@@ -36,7 +42,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
 
     logger.info("Bootstrapping simulation...")
 
-    message_broker = MessageBroker()
+    message_broker = MessageBroker(logger=logger)
 
     workers = []
     worker_ids = {}
@@ -74,6 +80,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
             orchestrator_instruction=orchestrator_config.instruction,
             task=simulation_config.task,
             openai=openai,
+            logger=logger,
         )
 
     metrics_definitions = json.dumps(
@@ -126,6 +133,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
         max_steps=simulation_config.max_steps,
         instruction=orchestrator_config.instruction,
         evaluator_id=evaluator.id,
+        logger=logger,
     )
 
     message_broker.subscribe(orchestrator.id, orchestrator.mailbox)
@@ -136,9 +144,12 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
         orchestrator=orchestrator,
         evaluator=evaluator,
         message_broker=message_broker,
+        logger=logger,
     )
 
-    simulation = Simulation(network=network, timeout=request.simulation.timeout)
+    simulation = Simulation(
+        network=network, timeout=request.simulation.timeout, logger=logger
+    )
     await Cache.simulation().init_simulation("created", request, simulation, metrics)
 
     create_prometheus_metrics(metrics)

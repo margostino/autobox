@@ -20,6 +20,14 @@ grafana-client = "^4.1.0"
 prometheus-client = "^0.20.0"
 
 
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.29.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+docker-up = "docker compose up -d"
+docker-down = "docker compose down"
+docker-restart = { "shell" = "docker compose down && docker compose up -d" }

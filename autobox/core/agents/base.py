@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from asyncio import Queue
-from typing import ClassVar, Dict, List
+from typing import Dict, List
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -22,8 +22,10 @@ class BaseAgent(BaseModel, ABC):
     task: str
     memory: Dict[str, List[str]] = Field(default={})
     is_end: bool = False
+    logger: Logger
 
-    logger: ClassVar[Logger] = Logger.get_instance()
+    class Config:
+        arbitrary_types_allowed = True
 
     @model_validator(mode="before")
     @classmethod

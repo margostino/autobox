@@ -1,6 +1,5 @@
 import asyncio
 import time
-from typing import ClassVar
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -14,11 +13,13 @@ class Simulation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     network: Network
     timeout: int = Field(default=120)
+    logger: Logger
 
-    logger: ClassVar[Logger] = Logger.get_instance()
+    class Config:
+        arbitrary_types_allowed = True
 
     async def run(self):
-        self.logger.info(f"{green('✅ Autobox is running')}")
+        self.logger.info(f"{green('✅ Simulation is running')}")
         start_time = time.time()
 
         task = asyncio.create_task(self.network.run(self.id))

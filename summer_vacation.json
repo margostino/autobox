@@ -1,0 +1,86 @@
+{
+    "preference_alignment_score": {
+        "name": "preference_alignment_score",
+        "description": "Measures the degree of alignment between Ana and John's initial vacation preferences.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "final_agreement_score": {
+        "name": "final_agreement_score",
+        "description": "Evaluates how much the final vacation decision aligns with each agent's initial preferences.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "decision_iterations_total": {
+        "name": "decision_iterations_total",
+        "description": "Tracks the total number of iterations or discussions it took for Ana and John to reach a consensus on the vacation plan.",
+        "type": "counter",
+        "unit": "iterations",
+        "value": 0.0
+    },
+    "influence_score": {
+        "name": "influence_score",
+        "description": "Measures the influence each agent had on the final decision, reflecting which agent's preferences dominated.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "compromise_index": {
+        "name": "compromise_index",
+        "description": "Measures how much each agent had to compromise from their initial preferences to reach the final decision.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "satisfaction_score": {
+        "name": "satisfaction_score",
+        "description": "Measures each agent's satisfaction with the final vacation plan.",
+        "type": "gauge",
+        "unit": "satisfaction score",
+        "value": 0.0
+    },
+    "consensus_level": {
+        "name": "consensus_level",
+        "description": "Indicates how unanimous the final decision was between Ana and John.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "time_to_decision_seconds": {
+        "name": "time_to_decision_seconds",
+        "description": "Measures the total time taken to reach a final decision on the vacation destination.",
+        "type": "histogram",
+        "unit": "seconds",
+        "value": 0.0
+    },
+    "communication_efficiency": {
+        "name": "communication_efficiency",
+        "description": "Tracks the number of communications (e.g., discussions, messages) required to reach the decision.",
+        "type": "counter",
+        "unit": "communications",
+        "value": 0.0
+    },
+    "risk_tolerance_index": {
+        "name": "risk_tolerance_index",
+        "description": "Measures how much risk each agent is willing to take in terms of destination safety, budget flexibility, or other uncertain factors.",
+        "type": "gauge",
+        "unit": "index",
+        "value": 0.0
+    },
+    "decision_stability": {
+        "name": "decision_stability",
+        "description": "Evaluates whether the decision would change if Ana and John were presented with new information or faced with uncertainties.",
+        "type": "gauge",
+        "unit": "percentage likelihood",
+        "value": 0.0
+    },
+    "flexibility_score": {
+        "name": "flexibility_score",
+        "description": "Measures how willing each agent is to adapt or change their preferences during the decision-making process.",
+        "type": "gauge",
+        "unit": "index",
+        "value": 0.0
+    }
+}

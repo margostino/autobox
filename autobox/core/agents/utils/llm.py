@@ -2,33 +2,36 @@ import os
 from typing import Any, Dict, List, Tuple, Union
 
 from openai import NOT_GIVEN, OpenAI
+from pydantic import BaseModel, Field
+
+from autobox.schemas.constants import DEFAULT_PROMPT
+from autobox.schemas.metrics import MetricCalculator
 
 
-class LLM:
-    model: str
-    system_prompt: str
-    tools: List[Dict]
-    openai: "OpenAI"
-    parallel_tool_calls: bool
+class LLM(BaseModel):
+    model: str = Field(default="gpt-4o")
+    system_prompts: Dict[str, str]
+    parallel_tool_calls: bool = Field(default=NOT_GIVEN)
+    tools: List[Dict] = None
+    openai: OpenAI = None
 
-    def __init__(
-        self,
-        system_prompt: str,
-        tools: List[Dict] = None,
-        model: str = "gpt-4o-2024-08-06",
-        parallel_tool_calls: bool = NOT_GIVEN,
-    ):
-        self.model = model
-        self.system_prompt = system_prompt
-        self.tools = tools
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
+
+    def __init__(self, **data):
+        super().__init__(**data)
         self.openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
-        self.parallel_tool_calls = parallel_tool_calls
 
     def think(
-        self, thinker, messages, schema=None
+        self,
+        thinker: str,
+        messages: List[Dict],  # TODO: create type
+        prompt_name: str = DEFAULT_PROMPT,
+        schema: Union[MetricCalculator] = None,
     ) -> Tuple[Any, bool, Union[str, None]]:
         completion_messages = [
-            {"role": "system", "content": self.system_prompt},
+            {"role": "system", "content": self.system_prompts[prompt_name]},
         ] + messages
 
         if schema:

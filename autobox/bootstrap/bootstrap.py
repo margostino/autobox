@@ -14,13 +14,17 @@ from autobox.core.agents.utils.llm import LLM
 from autobox.core.agents.utils.messaging import MessageBroker
 from autobox.core.agents.worker import Worker
 from autobox.core.network import Network
+from autobox.core.prompts.metrics_calculator import METRICS_CALCULATOR_PROMPT
 from autobox.core.prompts.metrics_calculator import prompt as metrics_calculator_prompt
 from autobox.core.prompts.orchestrator import prompt as orchestrator_prompt
+from autobox.core.prompts.summary import SUMMARY_PROMPT
+from autobox.core.prompts.summary import prompt as summary_prompt
 from autobox.core.prompts.tools.worker import get_tools
 from autobox.core.prompts.worker import prompt as agent_prompt
 from autobox.core.simulation import Simulation
 from autobox.metrics.grafana import create_grafana_dashboard
 from autobox.metrics.prometheus import create_prometheus_metrics
+from autobox.schemas.constants import DEFAULT_PROMPT
 from autobox.schemas.simulation import SimulationRequest
 from autobox.utils.normalization import value_to_id
 
@@ -55,7 +59,13 @@ async def prepare_simulation(
             name=agent.name,
             mailbox=asyncio.Queue(maxsize=agent.mailbox.max_size),
             message_broker=message_broker,
-            llm=LLM(agent_prompt(simulation_config.task, agent.backstory)),
+            llm=LLM(
+                system_prompts={
+                    DEFAULT_PROMPT: agent_prompt(
+                        simulation_config.task, agent.backstory
+                    )
+                }
+            ),
             task=simulation_config.task,
             logger=logger,
             memory={"worker": []},
@@ -88,7 +98,15 @@ async def prepare_simulation(
 
     metrics_definitions = json.dumps(
         {
-            key: metric.model_dump(exclude={"value", "collector_registry"})
+            key: (
+                metric.model_dump(exclude={"value", "collector_registry"})
+                if hasattr(metric, "model_dump")
+                else {
+                    k: v
+                    for k, v in metric.items()
+                    if k not in {"value", "collector_registry"}
+                }
+            )
             for key, metric in metrics.items()
         }
     )
@@ -101,18 +119,16 @@ async def prepare_simulation(
         logger=logger,
         is_local_mode=is_local_mode,
         llm=LLM(
-            metrics_calculator_prompt(
-                task=simulation_config.task,
-                agents={worker.name: worker.backstory for worker in workers},
-                metrics=json.dumps(
-                    {
-                        metric.name: metric.model_dump_json(
-                            exclude="collector_registry"
-                        )
-                        for metric in metrics.values()
-                    }
+            system_prompts={
+                METRICS_CALCULATOR_PROMPT: metrics_calculator_prompt(
+                    task=simulation_config.task,
+                    agents={worker.name: worker.backstory for worker in workers},
                 ),
-            )
+                SUMMARY_PROMPT: summary_prompt(
+                    task=simulation_config.task,
+                    agents={worker.name: worker.backstory for worker in workers},
+                ),
+            },
         ),
     )
 
@@ -121,12 +137,14 @@ async def prepare_simulation(
         mailbox=asyncio.Queue(maxsize=orchestrator_config.mailbox.max_size),
         message_broker=message_broker,
         llm=LLM(
-            orchestrator_prompt(
-                simulation_config.task,
-                simulation_config.max_steps,
-                orchestrator_config.instruction,
-                metrics=metrics_definitions,
-            ),
+            system_prompts={
+                DEFAULT_PROMPT: orchestrator_prompt(
+                    simulation_config.task,
+                    simulation_config.max_steps,
+                    orchestrator_config.instruction,
+                    metrics=metrics_definitions,
+                )
+            },
             tools=tools,
             parallel_tool_calls=True,
         ),

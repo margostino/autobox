@@ -103,6 +103,17 @@ class Orchestrator(BaseAgent):
             self.logger.info(f"{green('🔚 Orchestrator is ending process...')}")
             self.logger.info(f"{blue('🔄 Total iterations:')} {self.iterations_counter}")
             self.logger.info(f"{blue('🏁 Final result:')} {value}")
+            self.message_broker.publish(Message(
+                to_agent_id=self.evaluator_id,
+                value=json.dumps(
+                    {
+                        "is_end": self.is_end,
+                        "final_completion": value,
+                        "memory": self.memory,
+                    }
+                ),
+                from_agent_id=self.id,
+            ))
 
     def send(self, message: Message):
         self.message_broker.publish(message)

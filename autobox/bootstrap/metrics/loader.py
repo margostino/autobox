@@ -13,6 +13,7 @@ def load_metrics(
 ) -> Optional[Dict[str, Metric]]:
     full_path = os.path.join(path, f"{name}.json")
 
+    # TODO: generate metrics by configuration
     if os.path.exists(full_path):
         try:
             with open(full_path, "r", encoding="utf-8") as file:
@@ -21,6 +22,7 @@ def load_metrics(
                     key: Metric(**value) for key, value in data.items()
                 }
                 return metrics
-        except (FileNotFoundError, json.JSONDecodeError, ValidationError, IOError):
+        except (FileNotFoundError, json.JSONDecodeError, ValidationError, IOError) as e:
+            print(f"Error loading metrics: {str(e)}")
             return None
     return None

@@ -1,4 +1,7 @@
-def prompt(task: str, agents: str, metrics: str) -> str:
+METRICS_CALCULATOR_PROMPT: str = "metrics_calculator_prompt"
+
+
+def prompt(task: str, agents: str) -> str:
     return f"""
 <objective>
 You are a smart Simulation Analyst. Your mission is to evaluate and analyse the given state of a agent-based simulation and based on the given metrics, update those metric values that are relevant in the current the system’s behavior.

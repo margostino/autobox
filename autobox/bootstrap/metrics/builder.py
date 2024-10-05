@@ -54,7 +54,7 @@ def define_metrics(
             description=metric.description,
             type=metric.type,
             unit=metric.unit,
-        ).model_dump()
+        ).model_dump(exclude={"collector_registry"})
         for metric in metric_definitions.metrics
     }
 

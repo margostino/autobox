@@ -1,21 +1,41 @@
+[logging]
+file_path = "/Users/martin.dagostino/workspace/margostino/autobox/logs"
+verbose = true
+
 [simulation]
-max_steps = 150
-task = "We need to decide a destiny for our summer vacation."
+name = "Summer vacation"
+max_steps = 4
+verbose = true
 timeout = 300
+task = "We need to decide a destiny for our summer vacation."
+
+[simulation.llm]
+model = "gpt-4o-2024-08-06"
+
+[evaluator]
+name = "EVALUATOR"
+
+[evaluator.mailbox]
+max_size = 400
+
+[evaluator.llm]
+model = "gpt-4o-2024-08-06"
 
 [orchestrator]
 name = "ORCHESTRATOR"
+instruction = "Ana and John need to decide a destiny for their summer vacation. They have to agree based on their preferences and constraints."
 
 [orchestrator.mailbox]
 max_size = 400
 
+[orchestrator.llm]
+model = "gpt-4o-2024-08-06"
+
 [[agents]]
 name = "ANA"
-verbose = true
+role = "Ana is John's wife."
 backstory = """
-Ana is John's wife. She is 35 years old and works at Google as a Business Controller.
-She is passionate about reading and books. She likes food and she started a blog about books and reading. She loves Taylor Swift and she is a Swiftie.
-For vacation it is a MUST for me to go to montains.
+She is 35 years old and works at Google as a Business Controller. She is passionate about reading and books. She likes food and she started a blog about books and reading. She loves Taylor Swift and she is a Swiftie. For vacation it is a MUST for me to go to montains.
 """
 
 [agents.llm]
@@ -27,10 +47,9 @@ max_size = 100
 
 [[agents]]
 name = "JOHN"
-verbose = true
+role = "John is Ana's husband."
 backstory = """
-John is Ana's husband. He is 30 years old and works at Apple as a Software Engineer. He is passionate about technology and innovation.
-He loves to travel and explore new places. He is a big fan of Premier League. Both Ana and John are from London and they live in New York now. Both like Harry Potter books. John attended a Taylor Swift concert with Ana a month ago and he liked it.
+He is 30 years old and works at Apple as a Software Engineer. He is passionate about technology and innovation. He loves to travel and explore new places. He is a big fan of Premier League. Both Ana and John are from London and they live in New York now. Both like Harry Potter books. John attended a Taylor Swift concert with Ana a month ago and he liked it.
 """
 
 [agents.llm]

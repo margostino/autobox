@@ -30,27 +30,24 @@ class LLM(BaseModel):
         prompt_name: str = DEFAULT_PROMPT,
         schema: Union[MetricCalculator] = None,
     ) -> Tuple[Any, bool, Union[str, None]]:
-        try:
-            completion_messages = [
-                {"role": "system", "content": self.system_prompts[prompt_name]},
-            ] + messages
+        completion_messages = [
+            {"role": "system", "content": self.system_prompts[prompt_name]},
+        ] + messages
 
-            if schema:
-                completion = self.openai.beta.chat.completions.parse(
-                    messages=completion_messages,
-                    model=self.model,
-                    temperature=0,
-                    response_format=schema,
-                )
-            else:
-                completion = self.openai.chat.completions.create(
-                    messages=completion_messages,
-                    model=self.model,
-                    parallel_tool_calls=self.parallel_tool_calls,
-                    temperature=0,
-                    tools=self.tools,
-                )
+        if schema:
+            completion = self.openai.beta.chat.completions.parse(
+                messages=completion_messages,
+                model=self.model,
+                temperature=0,
+                response_format=schema,
+            )
+        else:
+            completion = self.openai.chat.completions.create(
+                messages=completion_messages,
+                model=self.model,
+                parallel_tool_calls=self.parallel_tool_calls,
+                temperature=0,
+                tools=self.tools,
+            )
 
-            return (completion, True, f"{thinker} knows what to do!")
-        except Exception as e:
-            return (completion, True, f"{thinker} knows what to do!")
+        return (completion, True, f"{thinker} knows what to do!")

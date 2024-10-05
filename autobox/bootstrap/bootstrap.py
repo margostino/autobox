@@ -118,6 +118,7 @@ async def prepare_simulation(
         message_broker=message_broker,
         logger=logger,
         is_local_mode=is_local_mode,
+        simulation_name=simulation_name_id,
         llm=LLM(
             system_prompts={
                 METRICS_CALCULATOR_PROMPT: metrics_calculator_prompt(
@@ -177,6 +178,7 @@ async def prepare_simulation(
     )
     await Cache.simulation().init_simulation("created", request, simulation, metrics)
 
+    evaluator.simulation_id = simulation.id
     create_prometheus_metrics(metrics)
     logger.info("Metrics loaded into Prometheus")
     grafana_response = await create_grafana_dashboard(

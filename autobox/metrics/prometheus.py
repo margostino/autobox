@@ -12,6 +12,7 @@ def metric_exists(metric_name):
 def create_prometheus_metrics(metrics: Dict[str, Metric]):
     labels = ["simulation_id", "simulation_name"]
     for name, metric in metrics.items():
+        # TODO: fix it
         if not metric_exists(name):
             if metric.type == "counter":
                 metric.collector_registry = Counter(name, metric.description, labels)

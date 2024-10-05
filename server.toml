@@ -4,5 +4,5 @@ port = 8000
 reload = true
 
 [logging]
-file_path = "/Users/martin.dagostino/workspace/margostino/autobox/logs"
+log_path = "/Users/martin.dagostino/workspace/margostino/autobox/logs"
 verbose = true

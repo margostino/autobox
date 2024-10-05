@@ -38,12 +38,18 @@ class Evaluator(BaseAgent):
             },
         ]
 
-        completion = spin(
-            f"🧠 Evaluator {self.name} ({self.id}) is thinking...",
-            lambda: self.llm.think(
-                self.name, chat_completion_messages, MetricCalculator
-            ),
-        )
+        completion = (
+            spin(
+                f"🧠 Evaluator {self.name} ({self.id}) is thinking...",
+                lambda: self.llm.think(
+                    self.name, chat_completion_messages, MetricCalculator
+                ),
+            )
+            if self.is_local_mode
+            else self.llm.think(self.name, chat_completion_messages, MetricCalculator)[
+                0
+            ]
+        )  # TODO: do it safe
 
         metrics_update: MetricCalculator = completion.choices[0].message.parsed
 

@@ -5,7 +5,7 @@ from typing import List
 from fastapi import BackgroundTasks, FastAPI, Response
 
 from autobox.api.abort_simulation import handle_abort_simulation
-from autobox.api.create_simulation import handle_create_simulation
+from autobox.api.create_server_simulation import handle_create_server_simulation
 from autobox.api.get_metrics_by_simulation_id import handle_get_metrics_by_simulation_id
 from autobox.api.get_prometheus_metrics import handle_prometheus_metrics
 from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
@@ -72,7 +72,9 @@ def create_app():
         background_tasks: BackgroundTasks,
         response: Response,
     ):
-        return await handle_create_simulation(request, background_tasks, response)
+        return await handle_create_server_simulation(
+            request, background_tasks, response
+        )
 
     @app.on_event("shutdown")
     async def shutdown_event():

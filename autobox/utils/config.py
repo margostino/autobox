@@ -39,7 +39,9 @@ def load_simulation_config(file_path: str = "config.toml") -> SimulationRequest:
         task = simulation_config.get("task", "")
         verbose = simulation_config.get("verbose", False)
         name = simulation_config.get("name", "")
-        logging = simulation_config.get("logging", {})
+        metrics_path = simulation_config.get("metrics_path", "")
+        logging_config = config.get("logging", {})
+        evaluator_config = config.get("evaluator", {})
 
         agents = []
         for agent_config in config.get("agents", []):
@@ -64,7 +66,7 @@ def load_simulation_config(file_path: str = "config.toml") -> SimulationRequest:
             timeout=timeout,
             task=task,
             verbose=verbose,
-            logging=logging,
+            metrics_path=metrics_path,
         )
 
         autobox_config = SimulationRequest(
@@ -72,6 +74,8 @@ def load_simulation_config(file_path: str = "config.toml") -> SimulationRequest:
             agents=agents,
             verbose=verbose,
             orchestrator=orchestrator,
+            logging=logging_config,
+            evaluator=evaluator_config,
         )
 
         return autobox_config
@@ -83,7 +87,7 @@ def load_server_config(file_path: str = "server.toml") -> ServerConfig:
         server_config = config.get("server", {})
         logging_config = config.get("logging", {})
         logging = LoggingConfig(
-            file_path=logging_config.get("file_path"),
+            log_path=logging_config.get("log_path"),
             verbose=logging_config.get("verbose", False),
         )
         return ServerConfig(

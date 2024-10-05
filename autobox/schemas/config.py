@@ -38,8 +38,8 @@ class OrchestratorConfig:
 
 
 class LoggingConfig:
-    def __init__(self, file_path: Optional[str] = None, verbose: bool = False):
-        self.file_path = file_path
+    def __init__(self, log_path: Optional[str] = None, verbose: bool = False):
+        self.log_path = log_path
         self.verbose = verbose
 
 

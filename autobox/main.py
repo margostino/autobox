@@ -20,7 +20,7 @@ async def main():
     )
 
     logger = Logger(
-        name=mode, verbose=config.logging.verbose, log_path=config.logging.file_path
+        name=mode, verbose=config.logging.verbose, log_path=config.logging.log_path
     )
 
     logger.print_banner()

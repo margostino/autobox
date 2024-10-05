@@ -53,7 +53,9 @@ class Worker(BaseAgent):
             },
         ]
 
-        completion = spin(f"🧠 Agent {self.name} ({self.id}) is thinking...", lambda: self.llm.think(self.name, chat_completion_messages))
+        completion = (spin(f"🧠 Agent {self.name} ({self.id}) is thinking...", lambda: self.llm.think(self.name, chat_completion_messages))
+                    if self.is_local_mode
+                    else self.llm.think(self.name, chat_completion_messages)[0])  # TODO: do it safe
 
         value = completion.choices[0].message.content
         self.memory['worker'].append(value)

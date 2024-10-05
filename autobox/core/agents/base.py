@@ -23,6 +23,7 @@ class BaseAgent(BaseModel, ABC):
     memory: Dict[str, List[str]] = Field(default={})
     is_end: bool = False
     logger: Logger
+    is_local_mode: bool = Field(default=False)
 
     class Config:
         arbitrary_types_allowed = True
@@ -35,9 +36,6 @@ class BaseAgent(BaseModel, ABC):
             raise ValueError("name must be set")
         values["id"] = hash(name) % 1000
         return values
-
-    class Config:
-        arbitrary_types_allowed = True
 
     @abstractmethod
     async def handle_message(self, message: Message):

@@ -57,7 +57,9 @@ class Orchestrator(BaseAgent):
             },
         ]
 
-        completion = spin_with_handler(f"🧠 Orchestrator {self.name} ({self.id}) is thinking...", Orchestrator.handle_spin_completion, lambda: self.llm.think(self.name, chat_completion_messages))
+        completion = (spin_with_handler(f"🧠 Orchestrator {self.name} ({self.id}) is thinking...", Orchestrator.handle_spin_completion, lambda: self.llm.think(self.name, chat_completion_messages))
+            if self.is_local_mode
+            else self.llm.think(self.name, chat_completion_messages)[0])  # TODO: do it safe
 
         tool_calls = completion.choices[0].message.tool_calls
         reply_messages = []

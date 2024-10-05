@@ -10,7 +10,7 @@ from autobox.runner.event_loop import EventLoop
 from autobox.schemas.simulation import SimulationRequest
 
 
-async def handle_create_simulation(
+async def handle_create_server_simulation(
     request: SimulationRequest, background_tasks: BackgroundTasks, response: Response
 ):
     simulation_id: str = None

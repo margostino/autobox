@@ -59,6 +59,7 @@ class SimulationRequest(BaseModel):
     orchestrator: OrchestratorConfig
     evaluator: EvaluatorConfig
     agents: List[AgentConfig]
+    is_server_mode: bool = Field(default=True)
 
 
 class InstructionRequest(BaseModel):

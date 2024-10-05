@@ -25,7 +25,9 @@ from autobox.schemas.simulation import SimulationRequest
 from autobox.utils.normalization import value_to_id
 
 
-async def prepare_simulation(request: SimulationRequest) -> Simulation:
+async def prepare_simulation(
+    request: SimulationRequest, is_local_mode=False
+) -> Simulation:
     log_name = value_to_id(request.simulation.name)
     logger = Logger(
         name=log_name,
@@ -58,6 +60,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
             logger=logger,
             memory={"worker": []},
             backstory=agent.backstory,
+            is_local_mode=is_local_mode,
         )
         worker_ids[worker.name] = worker.id
         workers.append(worker)
@@ -96,6 +99,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
         task=simulation_config.task,
         message_broker=message_broker,
         logger=logger,
+        is_local_mode=is_local_mode,
         llm=LLM(
             metrics_calculator_prompt(
                 task=simulation_config.task,
@@ -134,6 +138,7 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
         instruction=orchestrator_config.instruction,
         evaluator_id=evaluator.id,
         logger=logger,
+        is_local_mode=is_local_mode,
     )
 
     message_broker.subscribe(orchestrator.id, orchestrator.mailbox)
@@ -148,7 +153,9 @@ async def prepare_simulation(request: SimulationRequest) -> Simulation:
     )
 
     simulation = Simulation(
-        network=network, timeout=request.simulation.timeout, logger=logger
+        network=network,
+        timeout=request.simulation.timeout,
+        logger=logger,
     )
     await Cache.simulation().init_simulation("created", request, simulation, metrics)
 

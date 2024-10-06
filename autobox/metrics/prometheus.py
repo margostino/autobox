@@ -12,10 +12,20 @@ def metric_exists(metric_name):
     return False
 
 
+def get_existing_metric(metric_name):
+    # Access the internal registry to check if the metric exists
+    if metric_name in REGISTRY._names_to_collectors:
+        return REGISTRY._names_to_collectors[metric_name]
+    return None
+
+
 def create_prometheus_metrics(metrics: Dict[str, Metric]):
     labels = ["simulation_id", "simulation_name"]
     for name, metric in metrics.items():
-        if not metric_exists(name):
+        existing_metric = get_existing_metric(name)
+        if existing_metric:
+            metric.collector_registry = existing_metric
+        else:
             if metric.type == "counter":
                 metric.collector_registry = Counter(name, metric.description, labels)
             elif metric.type == "gauge":

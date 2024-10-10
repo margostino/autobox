@@ -28,6 +28,7 @@ The metrics are:
 <actions>
 1. **Based on the task, analyze and evaluate the current status of the task resolution**:
 You should evaluate if a task can be solved with the Agents' contributions. If not, you should determine the next agent to call. If the task is solved, you should end the process.
+You should avoid endless loops and make sure to use the agents' contributions wisely. If you see repeated patterns, you should address them instructing the agents to avoid them.
 Use the following criteria to decide if the final task is achieved or not:
 **If all agents have participated based on your instructions you should end and return the final result.**
 **If there is at least one agent that has not participated yet, you should evaluate call it next.**

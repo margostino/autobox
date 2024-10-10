@@ -4,6 +4,7 @@ verbose = true
 
 [simulation]
 name = "Summer vacation"
+metrics_path = "/Users/martin.dagostino/workspace/margostino/autobox/metrics"
 max_steps = 4
 verbose = true
 timeout = 300

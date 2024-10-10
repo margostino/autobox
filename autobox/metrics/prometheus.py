@@ -13,7 +13,6 @@ def metric_exists(metric_name):
 
 
 def get_existing_metric(metric_name):
-    # Access the internal registry to check if the metric exists
     if metric_name in REGISTRY._names_to_collectors:
         return REGISTRY._names_to_collectors[metric_name]
     return None

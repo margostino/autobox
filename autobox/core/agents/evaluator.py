@@ -63,6 +63,7 @@ class Evaluator(BaseAgent):
             )
             self.logger.info(f"🔴 Evaluator {self.name} ({self.id}) is stopping...")
             self.is_end = True
+            cache.summary = summary_completion
             return
 
         if json_message_value["is_first"]:

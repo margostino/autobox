@@ -17,6 +17,7 @@ async def handle_get_simulation_by_id(simulation_id: int):
             details=simulation_status.details,
             started_at=simulation_status.started_at,
             finished_at=simulation_status.finished_at,
+            summary=simulation_status.summary,
             agents=[
                 SimulationStatusAgentResponse(id=agent_id, name=agent_name)
                 for agent_name, agent_id in simulation_status.simulation.network.orchestrator.worker_ids.items()

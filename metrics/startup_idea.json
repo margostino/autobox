@@ -1,0 +1,114 @@
+{
+    "preference_alignment_score": {
+        "name": "preference_alignment_score",
+        "description": "Measures the degree of similarity in the initial vacation preferences of Ana, John, and Jane.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "final_agreement_score": {
+        "name": "final_agreement_score",
+        "description": "Evaluates how much the final vacation decision aligns with each agent's initial preferences.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "decision_iterations_total": {
+        "name": "decision_iterations_total",
+        "description": "Tracks the number of rounds of discussion or negotiation it took for the agents to reach a consensus on the vacation plan.",
+        "type": "counter",
+        "unit": "iterations",
+        "value": 0.0
+    },
+    "influence_score": {
+        "name": "influence_score",
+        "description": "Measures the influence each agent had on the final decision, reflecting which agent's preferences dominated.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "conflict_resolution_rate": {
+        "name": "conflict_resolution_rate",
+        "description": "Tracks the frequency and resolution of conflicts or disagreements between agents during the decision-making process.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "compromise_index": {
+        "name": "compromise_index",
+        "description": "Measures how much each agent had to compromise from their initial preferences to reach the final decision.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "satisfaction_score": {
+        "name": "satisfaction_score",
+        "description": "Measures each agent's satisfaction with the final vacation plan.",
+        "type": "gauge",
+        "unit": "scale 1-10",
+        "value": 0.0
+    },
+    "consensus_level": {
+        "name": "consensus_level",
+        "description": "Indicates how unanimous the final decision was among the agents.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "time_to_decision_seconds": {
+        "name": "time_to_decision_seconds",
+        "description": "Measures the amount of time it took to reach a final decision.",
+        "type": "histogram",
+        "unit": "seconds",
+        "value": 0.0
+    },
+    "communication_efficiency": {
+        "name": "communication_efficiency",
+        "description": "Tracks the number of communications (e.g., messages, meetings) required to reach the decision.",
+        "type": "counter",
+        "unit": "communications",
+        "value": 0.0
+    },
+    "risk_tolerance_level": {
+        "name": "risk_tolerance_level",
+        "description": "Measures how much risk each agent is willing to take in terms of destination safety, budget flexibility, or other uncertain factors.",
+        "type": "gauge",
+        "unit": "scale 1-10",
+        "value": 0.0
+    },
+    "decision_stability": {
+        "name": "decision_stability",
+        "description": "Evaluates whether the decision would change if the agents were presented with new information or faced with uncertainties.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "flexibility_score": {
+        "name": "flexibility_score",
+        "description": "Measures how willing each agent is to adapt or change their preferences during the decision-making process.",
+        "type": "gauge",
+        "unit": "scale 1-10",
+        "value": 0.0
+    },
+    "reaction_to_external_factors": {
+        "name": "reaction_to_external_factors",
+        "description": "Tracks how the agents adjust their decisions based on external factors like budget changes, travel advisories, or peer recommendations.",
+        "type": "counter",
+        "unit": "adjustments",
+        "value": 0.0
+    },
+    "leadership_influence": {
+        "name": "leadership_influence",
+        "description": "Identifies if one agent emerges as the leader or dominant decision-maker in the group.",
+        "type": "gauge",
+        "unit": "percentage",
+        "value": 0.0
+    },
+    "group_cohesion_index": {
+        "name": "group_cohesion_index",
+        "description": "Measures how well the agents work together as a group, reflected in their ability to reach a consensus smoothly.",
+        "type": "gauge",
+        "unit": "index",
+        "value": 0.0
+    }
+}

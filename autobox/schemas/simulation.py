@@ -74,6 +74,7 @@ class SimulationStatus(BaseModel):
     finished_at: datetime = Field(default=None)
     simulation: Simulation = Field(default=None)
     metrics: Dict[str, Metric] = Field(default={})
+    summary: str = Field(default=None)
 
     class Config:
         arbitrary_types_allowed = True
@@ -92,6 +93,7 @@ class SimulationStatusResponse(BaseModel):
     finished_at: datetime = Field(default=None)
     agents: List[SimulationStatusAgentResponse]
     orchestrator: SimulationStatusAgentResponse
+    summary: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True

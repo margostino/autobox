@@ -1,19 +1,42 @@
+[logging]
+file_path = "/Users/martin.dagostino/workspace/margostino/autobox/logs"
+verbose = true
+
 [simulation]
-max_steps = 150
+name = "Startup idea"
+metrics_path = "/Users/martin.dagostino/workspace/margostino/autobox/metrics"
+max_steps = 4
+verbose = true
 timeout = 300
-task = "Brainstorm a startup idea, and come up with a name, target industry, a high level Business Model, and a tagline."
+task = "Brainstorm a startup idea, and come up with a name, target industry, a high level Business Model, and a tagline. Some ice-breaker questions: Climate Change, AGI, E-commerce, Travel, Books, Food, Music, Movies, Sports, Technology, Innovation, Harry Potter, Taylor Swift, Premier League, Star Wars."
+
+[simulation.llm]
+model = "gpt-4o-2024-08-06"
+
+[evaluator]
+name = "EVALUATOR"
+
+[evaluator.mailbox]
+max_size = 400
+
+[evaluator.llm]
+model = "gpt-4o-2024-08-06"
 
 [orchestrator]
 name = "ORCHESTRATOR"
+instruction = "Ana and John need to decide a destiny for their summer vacation. They have to agree based on their preferences and constraints."
 
 [orchestrator.mailbox]
 max_size = 400
 
+[orchestrator.llm]
+model = "gpt-4o-2024-08-06"
+
 [[agents]]
 name = "ANA"
-verbose = true
+role = "Fullstack Software Engineer"
 backstory = """
-Ana is Software Engineer. She is 35 and her passion is to solve problems. Lately she has been concerned about Climate Change.
+She is 35 and her passion is to solve problems. Lately she has been concerned about Climate Change. She has experience in LLM projects.
 """
 
 [agents.llm]
@@ -25,9 +48,22 @@ max_size = 100
 
 [[agents]]
 name = "JOHN"
-verbose = true
+role = "Senior Data Scientist"
 backstory = """
-John is a Data Scientist. He is 30 and his passion is to create new things. He is a big fan of Star Wars and he has a collection of Star Wars toys.
+He is 30 and his passion is to create new things. He is experienced in e-commerce industry. His is obsessed with AGI.
+"""
+
+[agents.llm]
+model = "gpt-4o"
+
+[agents.mailbox]
+max_size = 100
+
+[[agents]]
+name = "JANE"
+role = "Product Manager"
+backstory = """
+She like travelling, she is very smart when it comes to business. Her analytical mindset is very useful in decision making.
 """
 
 [agents.llm]

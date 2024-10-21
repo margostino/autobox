@@ -8,6 +8,7 @@ from autobox.cache.cache import Cache
 from autobox.common.logger import Logger
 from autobox.runner.event_loop import EventLoop
 from autobox.schemas.simulation import SimulationRequest
+from autobox.transformations.simulation_to_response import transform
 
 
 async def handle_create_server_simulation(
@@ -32,14 +33,7 @@ async def handle_create_server_simulation(
         # loop = asyncio.get_event_loop()
         # loop.run_in_executor(executor, run_async_in_thread, run_simulation_task, request)
         response.status_code = status.HTTP_201_CREATED
-        return {
-            "status": "in progress",
-            "simulation_id": simulation.id,
-            "agents": [
-                {"name": agent.name, "id": agent.id}
-                for agent in simulation.network.workers
-            ],
-        }
+        return transform(simulation)
     except Exception as e:
         logger.error("Error preparing simulation: %s", e)
         await cache.update_simulation_status(simulation_id, "failed", datetime.now())

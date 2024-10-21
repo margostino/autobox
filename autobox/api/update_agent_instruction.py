@@ -12,7 +12,7 @@ async def handle_update_simulation_instruction(
     if simulation_status is None:
         raise HTTPException(status_code=404, detail="simulation not found")
     # TODO: validate if agent_id exists
-    simulation_status.simulation.network.send_intruction_for_workers(
+    simulation_status.network.send_intruction_for_workers(
         agent_id=int(agent_id), instruction=request.instruction
     )
     response.status_code = status.HTTP_200_OK

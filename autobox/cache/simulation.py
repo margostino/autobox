@@ -5,12 +5,10 @@ from typing import Dict, Optional
 from pydantic import BaseModel, PrivateAttr
 
 from autobox.core.simulation import Simulation
-from autobox.schemas.metrics import Metric
-from autobox.schemas.simulation import SimulationRequest, SimulationStatus
 
 
 class SimulationCache(BaseModel):
-    simulations: Dict[str, SimulationStatus] = {}
+    simulations: Dict[str, Simulation] = {}
     _lock: asyncio.Lock = PrivateAttr()
 
     def __init__(self, **data):
@@ -41,27 +39,17 @@ class SimulationCache(BaseModel):
         self, simulation_id: str, status: str, finished_at: datetime = None
     ):
         async with self._lock:
-            simulation_status = self.simulations.get(simulation_id)
-            if simulation_status is not None:
-                simulation_status.status = status
-                simulation_status.finished_at = finished_at
-                return simulation_status
+            simulation = self.simulations.get(simulation_id)
+            if simulation is not None:
+                simulation.status = status
+                simulation.finished_at = finished_at
+                return simulation
             else:
                 return None
 
     async def init_simulation(
         self,
-        status: str,
-        request: Optional[SimulationRequest],
         simulation: Optional[Simulation],
-        metrics: Dict[str, Metric],
     ):
         async with self._lock:
-            self.simulations[simulation.id] = SimulationStatus(
-                simulation_id=simulation.id,
-                status=status,
-                details=request,
-                simulation=simulation,
-                started_at=datetime.now(),
-                metrics=metrics,
-            )
+            self.simulations[simulation.id] = simulation

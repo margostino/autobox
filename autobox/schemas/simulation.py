@@ -1,10 +1,17 @@
 import datetime
+from enum import Enum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from autobox.core.simulation import Simulation
 from autobox.schemas.metrics import Metric
+
+
+class SimulationStatus(str, Enum):
+    in_progress = "in progress"
+    new = "new"
+    failed = "failed"
+    completed = "completed"
 
 
 class MailboxConfig(BaseModel):
@@ -54,8 +61,12 @@ class SimulationConfig(BaseModel):
 
 
 class SimulationRequest(BaseModel):
+    name: str
+    max_steps: int  # TODO: tbd
+    timeout: int
+    task: str
+    metrics_path: str
     logging: LoggingConfig
-    simulation: SimulationConfig
     orchestrator: OrchestratorConfig
     evaluator: EvaluatorConfig
     agents: List[AgentConfig]
@@ -66,13 +77,12 @@ class InstructionRequest(BaseModel):
     instruction: str
 
 
-class SimulationStatus(BaseModel):
-    simulation_id: str
+class SimulationCacheValue(BaseModel):
+    id: str
     status: str
-    details: SimulationRequest
     started_at: datetime
     finished_at: datetime = Field(default=None)
-    simulation: Simulation = Field(default=None)
+    # simulation: Simulation = Field(default=None)
     metrics: Dict[str, Metric] = Field(default={})
     summary: str = Field(default=None)
 
@@ -80,20 +90,22 @@ class SimulationStatus(BaseModel):
         arbitrary_types_allowed = True
 
 
-class SimulationStatusAgentResponse(BaseModel):
+class SimulationAgentResponse(BaseModel):
     id: int
     name: str
 
 
-class SimulationStatusResponse(BaseModel):
-    simulation_id: str
+class SimulationResponse(BaseModel):
+    id: str
     status: str
-    details: SimulationRequest
+    name: str
     started_at: datetime
     finished_at: datetime = Field(default=None)
-    agents: List[SimulationStatusAgentResponse]
-    orchestrator: SimulationStatusAgentResponse
+    agents: List[SimulationAgentResponse]
+    orchestrator: SimulationAgentResponse
+    evaluator: SimulationAgentResponse
     summary: Optional[str] = None
+    progress: Optional[int] = None
 
     class Config:
         arbitrary_types_allowed = True

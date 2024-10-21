@@ -30,21 +30,20 @@ from autobox.utils.normalization import value_to_id
 
 
 async def prepare_simulation(
-    request: SimulationRequest, is_local_mode=False
+    simulation_request: SimulationRequest, is_local_mode=False
 ) -> Simulation:
-    log_name = value_to_id(request.simulation.name)
+    log_name = value_to_id(simulation_request.name)
     logger = Logger(
         name=log_name,
-        log_path=request.logging.log_path,
-        log_file=request.logging.log_file,
-        verbose=request.logging.verbose,
+        log_path=simulation_request.logging.log_path,
+        log_file=simulation_request.logging.log_file,
+        verbose=simulation_request.logging.verbose,
     )
 
     openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=4)
 
-    simulation_config = request.simulation
-    orchestrator_config = request.orchestrator
-    simulation_name_id = value_to_id(simulation_config.name)
+    orchestrator_config = simulation_request.orchestrator
+    simulation_name_id = value_to_id(simulation_request.name)
 
     logger.info("Bootstrapping simulation...")
 
@@ -54,7 +53,7 @@ async def prepare_simulation(
     worker_ids = {}
     worker_names = {}
     workers_memory_for_orchestrator = {}
-    for agent in request.agents:
+    for agent in simulation_request.agents:
         worker = Worker(
             name=agent.name,
             mailbox=asyncio.Queue(maxsize=agent.mailbox.max_size),
@@ -62,11 +61,11 @@ async def prepare_simulation(
             llm=LLM(
                 system_prompts={
                     DEFAULT_PROMPT: agent_prompt(
-                        simulation_config.task, agent.backstory
+                        simulation_request.task, agent.backstory
                     )
                 }
             ),
-            task=simulation_config.task,
+            task=simulation_request.task,
             logger=logger,
             memory={"worker": []},
             backstory=agent.backstory,
@@ -82,16 +81,16 @@ async def prepare_simulation(
 
     metrics = load_metrics(
         name=simulation_name_id,
-        path=simulation_config.metrics_path,
+        path=simulation_request.metrics_path,
     )
     if metrics is None:
         metrics = define_metrics(
             name=simulation_name_id,
-            path=simulation_config.metrics_path,
+            path=simulation_request.metrics_path,
             workers=workers,
             orchestrator_name=orchestrator_config.name,
             orchestrator_instruction=orchestrator_config.instruction,
-            task=simulation_config.task,
+            task=simulation_request.task,
             openai=openai,
             logger=logger,
         )
@@ -114,7 +113,7 @@ async def prepare_simulation(
     evaluator = Evaluator(
         name="metric_evaluator",
         mailbox=asyncio.Queue(maxsize=orchestrator_config.mailbox.max_size),
-        task=simulation_config.task,
+        task=simulation_request.task,
         message_broker=message_broker,
         logger=logger,
         is_local_mode=is_local_mode,
@@ -122,11 +121,11 @@ async def prepare_simulation(
         llm=LLM(
             system_prompts={
                 METRICS_CALCULATOR_PROMPT: metrics_calculator_prompt(
-                    task=simulation_config.task,
+                    task=simulation_request.task,
                     agents={worker.name: worker.backstory for worker in workers},
                 ),
                 SUMMARY_PROMPT: summary_prompt(
-                    task=simulation_config.task,
+                    task=simulation_request.task,
                     agents={worker.name: worker.backstory for worker in workers},
                 ),
             },
@@ -140,8 +139,8 @@ async def prepare_simulation(
         llm=LLM(
             system_prompts={
                 DEFAULT_PROMPT: orchestrator_prompt(
-                    simulation_config.task,
-                    simulation_config.max_steps,
+                    simulation_request.task,
+                    simulation_request.max_steps,
                     orchestrator_config.instruction,
                     metrics=metrics_definitions,
                 )
@@ -151,9 +150,9 @@ async def prepare_simulation(
         ),
         worker_ids=worker_ids,
         worker_names={value: key for key, value in worker_ids.items()},
-        task=simulation_config.task,
+        task=simulation_request.task,
         memory={"orchestrator": [], **workers_memory_for_orchestrator},
-        max_steps=simulation_config.max_steps,
+        max_steps=simulation_request.max_steps,
         instruction=orchestrator_config.instruction,
         evaluator_id=evaluator.id,
         logger=logger,
@@ -173,12 +172,16 @@ async def prepare_simulation(
 
     simulation = Simulation(
         network=network,
-        timeout=request.simulation.timeout,
+        name=simulation_request.name,
+        timeout=simulation_request.timeout,
         logger=logger,
+        metrics=metrics,
     )
-    await Cache.simulation().init_simulation("created", request, simulation, metrics)
+    await Cache.simulation().init_simulation(simulation)
 
     evaluator.simulation_id = simulation.id
+    orchestrator.simulation_id = simulation.id
+
     create_prometheus_metrics(metrics)
     logger.info("Metrics loaded into Prometheus")
     grafana_response = await create_grafana_dashboard(

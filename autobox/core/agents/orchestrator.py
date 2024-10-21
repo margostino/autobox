@@ -9,6 +9,7 @@ from autobox.core.agents.base import BaseAgent
 from autobox.schemas.message import Message
 from autobox.utils.console import blue, green, spin_with_handler, yellow
 from autobox.utils.llm import extract_chat_completion
+from autobox.utils.progress import calculate_progress
 
 
 class Orchestrator(BaseAgent):
@@ -18,29 +19,42 @@ class Orchestrator(BaseAgent):
     max_steps: int = Field(default=5)
     instruction: str
     evaluator_id: int
+    simulation_id: str = None
 
     async def handle_message(self, message: Message):
+        from autobox.cache.cache import Cache
+
+        cache = await Cache.simulation().get_simulation_status(self.simulation_id)
+
         if message.from_agent_id is None:
-            self.logger.info(f"{blue(f"📬 Orchestrator {self.name} ({self.id}) preparing initial message...")}")
+            self.logger.info(
+                f"{blue(f"📬 Orchestrator {self.name} ({self.id}) preparing initial message...")}"
+            )
             agent_decisions = []
         else:
             from_agent_name = self.worker_names[message.from_agent_id]
-            self.logger.info(f"{blue(f"📨 Orchestrator {self.name} ({self.id}) handling message from {from_agent_name}...")}")
+            self.logger.info(
+                f"{blue(f"📨 Orchestrator {self.name} ({self.id}) handling message from {from_agent_name}...")}"
+            )
             self.logger.info(f"{yellow(f"🗣️ {from_agent_name} said:")} {message.value}")
-            self.memory[from_agent_name].append(f"{from_agent_name} said: {message.value}")
+            self.memory[from_agent_name].append(
+                f"{from_agent_name} said: {message.value}"
+            )
             agent_decisions = self.memory[from_agent_name]
 
-        self.message_broker.publish(Message(
-                        to_agent_id=self.evaluator_id,
-                        value=json.dumps(
-                            {
-                                "memory": self.memory,
-                                "iterations_counter": self.iterations_counter,
-                                "is_first": message.from_agent_id is None,
-                            }
-                        ),
-                        from_agent_id=self.id,
-                    ))
+        self.message_broker.publish(
+            Message(
+                to_agent_id=self.evaluator_id,
+                value=json.dumps(
+                    {
+                        "memory": self.memory,
+                        "iterations_counter": self.iterations_counter,
+                        "is_first": message.from_agent_id is None,
+                    }
+                ),
+                from_agent_id=self.id,
+            )
+        )
 
         chat_completion_messages = [
             {
@@ -57,9 +71,15 @@ class Orchestrator(BaseAgent):
             },
         ]
 
-        completion = (spin_with_handler(f"🧠 Orchestrator {self.name} ({self.id}) is thinking...", Orchestrator.handle_spin_completion, lambda: self.llm.think(self.name, chat_completion_messages))
+        completion = (
+            spin_with_handler(
+                f"🧠 Orchestrator {self.name} ({self.id}) is thinking...",
+                Orchestrator.handle_spin_completion,
+                lambda: self.llm.think(self.name, chat_completion_messages),
+            )
             if self.is_local_mode
-            else self.llm.think(self.name, chat_completion_messages)[0])  # TODO: do it safe
+            else self.llm.think(self.name, chat_completion_messages)[0]
+        )  # TODO: do it safe
 
         tool_calls = completion.choices[0].message.tool_calls
         reply_messages = []
@@ -69,7 +89,9 @@ class Orchestrator(BaseAgent):
                 function_name = tool_call.function.name
                 agent_id = self.worker_ids[function_name]
                 arguments = tool_call.function.arguments
-                self.memory["orchestrator"].append(f"Orchestrator called {function_name} with arguments: {arguments}")
+                self.memory["orchestrator"].append(
+                    f"Orchestrator called {function_name} with arguments: {arguments}"
+                )
                 reply_messages.append(
                     Message(
                         to_agent_id=agent_id,
@@ -101,19 +123,31 @@ class Orchestrator(BaseAgent):
             asyncio.sleep(4)
             value = completion.choices[0].message.content
             self.logger.info(f"{green('🔚 Orchestrator is ending process...')}")
-            self.logger.info(f"{blue('🔄 Total iterations:')} {self.iterations_counter}")
+            self.logger.info(
+                f"{blue('🔄 Total iterations:')} {self.iterations_counter}"
+            )
             self.logger.info(f"{blue('🏁 Final result:')} {value}")
-            self.message_broker.publish(Message(
-                to_agent_id=self.evaluator_id,
-                value=json.dumps(
-                    {
-                        "is_end": self.is_end,
-                        "final_completion": value,
-                        "memory": self.memory,
-                    }
-                ),
-                from_agent_id=self.id,
-            ))
+            self.message_broker.publish(
+                Message(
+                    to_agent_id=self.evaluator_id,
+                    value=json.dumps(
+                        {
+                            "is_end": self.is_end,
+                            "final_completion": value,
+                            "memory": self.memory,
+                        }
+                    ),
+                    from_agent_id=self.id,
+                )
+            )
+        else:
+            progress = calculate_progress(
+                cache.started_at, cache.timeout, self.iterations_counter
+            )
+            self.logger.info(
+                f"{green(f'🔄 Orchestrator is still running... Progress: {int(progress)}%')}"
+            )
+            cache.progress = progress
 
     def send(self, message: Message):
         self.message_broker.publish(message)

@@ -21,7 +21,11 @@ You are given the following inputs:
 
 
 <output>
-Given all the inputs you have to evaluate which metric values need to be updated. Every metric value is a FLOAT number. Not neccecerily all the metrics need to be updated. You should analyze and evaluate. It could be zero, one, multiple metrics. Think carefully and update the metrics.
-For the output use the schema provided as response format which inlcudes the updated metric values and a thinking process summary where you explain why you updated the metrics you updated.
+Given all the inputs you have to evaluate which metric values need to be updated. Every metric value is a FLOAT number. Not neccecerily all the metrics need to be updated. You should analyze and evaluate. It could be none, one or multiple metrics you want to update. Think carefully and update the metrics.
+For the output use the schema provided as response format which includes a list of:
+- metric_name: str => name of the metric.
+- value: float => updated value of the metric.
+- agent_name: str => label for name of the agent that the metric value belongs to. You should evaluate metric values for all agents.
+- thinking_process: str => a summary where you explain why you updated the metrics you updated.
 </output>
 """

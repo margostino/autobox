@@ -18,6 +18,7 @@ from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
 from autobox.api.get_simulations import handle_get_simulations
 from autobox.api.ping import handle_ping
 from autobox.api.update_agent_instruction import handle_update_simulation_instruction
+from autobox.cache.cache import Cache
 from autobox.common.logger import Logger
 from autobox.schemas.config import ServerConfig
 from autobox.schemas.metrics import MetricResponse
@@ -69,6 +70,23 @@ def create_app():
         except Exception as e:
             yield f"data: {{'error': 'An error occurred: {str(e)}'}}\n\n"
 
+    async def traces_stream(simulation_id: str) -> AsyncGenerator[str, None]:
+        try:
+            while True:
+                simulation = await handle_get_simulation_by_id(simulation_id)
+                traces = Cache.traces().get_traces_by(simulation_id)
+                data = {
+                    "traces": traces,
+                    "progress": simulation.progress,
+                    "status": simulation.status,
+                }
+                yield f"data: {json.dumps(data, default=str)}\n\n"
+                await asyncio.sleep(1)
+                if simulation.progress >= 100 or simulation.status != "in progress":
+                    break
+        except Exception as e:
+            yield f"data: {{'error': 'An error occurred: {str(e)}'}}\n\n"
+
     @app.get("/simulations", response_model=List[SimulationResponse])
     async def get_simulations():
         return await handle_get_simulations()
@@ -80,6 +98,16 @@ def create_app():
         if streaming:
             return StreamingResponse(
                 progress_stream(simulation_id), media_type="text/event-stream"
+            )
+        return await handle_get_simulation_by_id(simulation_id)
+
+    @app.get("/simulations/{simulation_id}/traces", response_model=SimulationResponse)
+    async def get_simulation_traces_by_id(
+        simulation_id: str, streaming: Optional[bool] = Query(False)
+    ):
+        if streaming:
+            return StreamingResponse(
+                traces_stream(simulation_id), media_type="text/event-stream"
             )
         return await handle_get_simulation_by_id(simulation_id)
 

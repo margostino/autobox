@@ -2,11 +2,12 @@ import logging
 import sys
 from typing import Optional
 
-from autobox.utils.normalization import value_to_id
+from autobox.utils.normalization import remove_ansi_codes, value_to_id
 
 
 class Logger:
     _instance: Optional["Logger"] = None
+    simulation_id: str = None
 
     def __init__(
         self,
@@ -44,8 +45,10 @@ class Logger:
         Logger._instance = self
 
     def info(self, message: str):
-        # if self.verbose:
-        #     print(message)
+        from autobox.cache.cache import Cache
+
+        traces = Cache.traces().get_or_create_traces_by(self.simulation_id)
+        traces.append(remove_ansi_codes(message))
         self._logger.info(message)
 
     def error(self, message: str, exception: Exception = None):

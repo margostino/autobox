@@ -106,6 +106,8 @@ class SimulationResponse(BaseModel):
     evaluator: SimulationAgentResponse
     summary: Optional[str] = None
     progress: Optional[int] = None
+    public_dashboard_url: Optional[str] = None
+    internal_dashboard_url: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True

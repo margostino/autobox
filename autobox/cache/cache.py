@@ -2,6 +2,7 @@ from typing import Optional
 
 from autobox.cache.metrics import MetricsCache
 from autobox.cache.simulation import SimulationCache
+from autobox.cache.traces import TracesCache
 
 
 class Cache:
@@ -9,6 +10,7 @@ class Cache:
 
     def __init__(self):
         self.simulation_cache = SimulationCache()
+        self.traces_cache = TracesCache()
 
     @classmethod
     def get_instance(cls) -> "Cache":
@@ -27,3 +29,7 @@ class Cache:
     @classmethod
     def simulation(cls) -> SimulationCache:
         return cls.get_instance().simulation_cache
+
+    @classmethod
+    def traces(cls) -> TracesCache:
+        return cls.get_instance().traces_cache

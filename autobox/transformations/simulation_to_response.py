@@ -11,6 +11,8 @@ def transform(simulation: Simulation) -> SimulationResponse:
         finished_at=simulation.finished_at,
         summary=simulation.summary,
         progress=simulation.progress,
+        public_dashboard_url=simulation.public_dashboard_url,
+        internal_dashboard_url=simulation.internal_dashboard_url,
         agents=[
             SimulationAgentResponse(id=agent_id, name=agent_name)
             for agent_name, agent_id in simulation.network.orchestrator.worker_ids.items()

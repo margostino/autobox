@@ -1,7 +1,11 @@
 import os
 
+from dotenv import load_dotenv
+
 import docker
 from autobox.common.logger import Logger
+
+load_dotenv()
 
 
 def create_network_if_not_exists(network_name: str):

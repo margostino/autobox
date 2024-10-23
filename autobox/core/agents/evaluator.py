@@ -107,24 +107,22 @@ class Evaluator(BaseAgent):
         try:
             for metric in metrics_update.update:
                 cache.metrics[metric.metric_name].value = metric.value
+                metric_collector = cache.metrics[
+                    metric.metric_name
+                ].collector_registry.labels(
+                    simulation_id=self.simulation_id,
+                    simulation_name=self.simulation_name,
+                    agent_name=metric.agent_name,
+                )
 
                 #  TODO: make it safe and add more types like summary
-                if cache.metrics[metric.metric_name].type == "counter":
-                    cache.metrics[metric.metric_name].collector_registry.labels(
-                        simulation_id=self.simulation_id,
-                        simulation_name=self.simulation_name,
-                    ).inc(
+                if cache.metrics[metric.metric_name].prometheus_type == "counter":
+                    metric_collector.inc(
                         metric.value
                     )  # TODO: fix misinterpretation of value (e.g. count vs gaugue...5 from LLM should be 1 always?)
-                elif cache.metrics[metric.metric_name].type == "gauge":
-                    cache.metrics[metric.metric_name].collector_registry.labels(
-                        simulation_id=self.simulation_id,
-                        simulation_name=self.simulation_name,
-                    ).set(metric.value)
-                elif cache.metrics[metric.metric_name].type == "histogram":
-                    cache.metrics[metric.metric_name].collector_registry.labels(
-                        simulation_id=self.simulation_id,
-                        simulation_name=self.simulation_name,
-                    ).observe(metric.value)
+                elif cache.metrics[metric.metric_name].prometheus_type == "gauge":
+                    metric_collector.set(metric.value)
+                elif cache.metrics[metric.metric_name].prometheus_type == "histogram":
+                    metric_collector.observe(metric.value)
         except Exception as e:
             self.logger.error(f"Error updating metrics: {e}")

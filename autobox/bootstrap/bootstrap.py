@@ -178,18 +178,20 @@ async def prepare_simulation(
         metrics=metrics,
     )
     await Cache.simulation().init_simulation(simulation)
+    await Cache.traces().init_traces(simulation.id)
 
     evaluator.simulation_id = simulation.id
     orchestrator.simulation_id = simulation.id
+    logger.simulation_id = simulation.id
 
     create_prometheus_metrics(metrics)
     logger.info("Metrics loaded into Prometheus")
-    grafana_response = await create_grafana_dashboard(
+    internal_dashboard_url, public_dashboard_url = await create_grafana_dashboard(
         simulation_name_id, simulation.id, metrics
     )
-    logger.info(f"Grafana dashboard created: {grafana_response['status']}")
-    # TODO: do it properly and support remote servers
-    dashboard_url = f"http://localhost:3000{grafana_response['url']}?orgId=1&refresh=5s"
-    logger.info(f"Dashboard URL: {dashboard_url}")
+    simulation.internal_dashboard_url = internal_dashboard_url
+    simulation.public_dashboard_url = public_dashboard_url
+    logger.info(f"Dashboard URL: {internal_dashboard_url}")
+    logger.info(f"Public dashboard URL: {public_dashboard_url}")
 
     return simulation

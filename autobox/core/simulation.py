@@ -24,6 +24,8 @@ class Simulation(BaseModel):
     metrics: Dict[str, Metric] = Field(default={})
     summary: str = Field(default=None)
     progress: int = Field(default=0)
+    internal_dashboard_url: str = Field(default=None)
+    public_dashboard_url: str = Field(default=None)
 
     class Config:
         arbitrary_types_allowed = True

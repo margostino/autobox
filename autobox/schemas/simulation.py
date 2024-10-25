@@ -118,6 +118,8 @@ class ProjectSimulationResponse(BaseModel):
     status: str
     name: str
     progress: Optional[int] = None
+    started_at: datetime
+    finished_at: datetime = Field(default=None)
 
     class Config:
         arbitrary_types_allowed = True

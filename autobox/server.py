@@ -13,6 +13,7 @@ from autobox.api.abort_simulation import handle_abort_simulation
 from autobox.api.create_server_simulation import handle_create_server_simulation
 from autobox.api.get_metrics_by_simulation_id import handle_get_metrics_by_simulation_id
 from autobox.api.get_organizations import handle_get_organizations
+from autobox.api.get_project_by_id import handle_get_project_by_id
 from autobox.api.get_projects import handle_get_projects
 from autobox.api.get_prometheus_metrics import handle_prometheus_metrics
 from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
@@ -161,6 +162,11 @@ def create_app():
     @app.get("/organizations")
     async def get_organizations():
         return await handle_get_organizations()
+
+    @app.get("/projects/{project_id}")
+    async def get_project_by_id(project_id: str):
+        project = await handle_get_project_by_id(project_id)
+        return project
 
     return app
 

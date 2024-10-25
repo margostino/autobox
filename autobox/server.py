@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from autobox.api.abort_simulation import handle_abort_simulation
 from autobox.api.create_server_simulation import handle_create_server_simulation
 from autobox.api.get_metrics_by_simulation_id import handle_get_metrics_by_simulation_id
+from autobox.api.get_organizations import handle_get_organizations
 from autobox.api.get_projects import handle_get_projects
 from autobox.api.get_prometheus_metrics import handle_prometheus_metrics
 from autobox.api.get_simulation_by_id import handle_get_simulation_by_id
@@ -20,6 +21,7 @@ from autobox.api.ping import handle_ping
 from autobox.api.update_agent_instruction import handle_update_simulation_instruction
 from autobox.cache.cache import Cache
 from autobox.common.logger import Logger
+from autobox.core.simulation import Simulation
 from autobox.schemas.config import ServerConfig
 from autobox.schemas.metrics import MetricResponse
 from autobox.schemas.simulation import (
@@ -70,11 +72,11 @@ def create_app():
         except Exception as e:
             yield f"data: {{'error': 'An error occurred: {str(e)}'}}\n\n"
 
-    async def traces_stream(simulation_id: str) -> AsyncGenerator[str, None]:
+    async def traces_stream(
+        simulation: Simulation, traces: List[str]
+    ) -> AsyncGenerator[str, None]:
         try:
             while True:
-                simulation = await handle_get_simulation_by_id(simulation_id)
-                traces = Cache.traces().get_traces_by(simulation_id)
                 data = {
                     "traces": traces,
                     "progress": simulation.progress,
@@ -101,15 +103,17 @@ def create_app():
             )
         return await handle_get_simulation_by_id(simulation_id)
 
-    @app.get("/simulations/{simulation_id}/traces", response_model=SimulationResponse)
+    @app.get("/simulations/{simulation_id}/traces", response_model=List[str])
     async def get_simulation_traces_by_id(
         simulation_id: str, streaming: Optional[bool] = Query(False)
     ):
-        if streaming:
+        simulation = await handle_get_simulation_by_id(simulation_id)
+        traces = Cache.traces().get_traces_by(simulation_id)
+        if streaming and simulation.status == "in progress":
             return StreamingResponse(
-                traces_stream(simulation_id), media_type="text/event-stream"
+                traces_stream(simulation, traces), media_type="text/event-stream"
             )
-        return await handle_get_simulation_by_id(simulation_id)
+        return traces
 
     @app.get(
         "/simulations/{simulation_id}/metrics", response_model=List[MetricResponse]
@@ -153,6 +157,10 @@ def create_app():
     @app.get("/projects")
     async def get_projects():
         return await handle_get_projects()
+
+    @app.get("/organizations")
+    async def get_organizations():
+        return await handle_get_organizations()
 
     return app
 

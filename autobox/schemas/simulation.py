@@ -111,3 +111,13 @@ class SimulationResponse(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class ProjectSimulationResponse(BaseModel):
+    id: str
+    status: str
+    name: str
+    progress: Optional[int] = None
+
+    class Config:
+        arbitrary_types_allowed = True

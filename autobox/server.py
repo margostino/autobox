@@ -81,6 +81,8 @@ def create_app():
     ) -> AsyncGenerator[str, None]:
         try:
             while True:
+                simulation = await handle_get_simulation_by_id(simulation.id)
+                traces = Cache.traces().get_traces_by(simulation.id)
                 data = {
                     "traces": traces,
                     "progress": simulation.progress,

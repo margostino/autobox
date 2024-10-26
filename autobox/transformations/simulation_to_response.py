@@ -9,6 +9,7 @@ def transform(simulation: Simulation) -> SimulationResponse:
         status=simulation.status,
         started_at=simulation.started_at,
         finished_at=simulation.finished_at,
+        aborted_at=simulation.aborted_at,
         summary=simulation.summary,
         progress=simulation.progress,
         public_dashboard_url=simulation.public_dashboard_url,

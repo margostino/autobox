@@ -10,4 +10,5 @@ def transform(simulation: Simulation) -> ProjectSimulationResponse:
         progress=simulation.progress,
         started_at=simulation.started_at,
         finished_at=simulation.finished_at,
+        aborted_at=simulation.aborted_at,
     )

@@ -18,6 +18,7 @@ class Simulation(BaseModel):
     status: SimulationStatus = Field(default=SimulationStatus.in_progress)
     started_at: datetime = Field(default=None)
     finished_at: datetime = Field(default=None)
+    aborted_at: datetime = Field(default=None)
     network: Network
     timeout: int = Field(default=120)
     logger: Logger
@@ -50,5 +51,6 @@ class Simulation(BaseModel):
         self.logger.info(f"{blue(f"⏱️ Elapsed time: {elapsed_time} seconds.")}")
 
     def abort(self):
+        self.aborted_at = datetime.now()
         self.network.stop()
         self.logger.info(f"{blue('🔚 Simulation aborted.')}")

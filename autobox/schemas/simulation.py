@@ -101,6 +101,7 @@ class SimulationResponse(BaseModel):
     name: str
     started_at: datetime
     finished_at: datetime = Field(default=None)
+    aborted_at: datetime = Field(default=None)
     agents: List[SimulationAgentResponse]
     orchestrator: SimulationAgentResponse
     evaluator: SimulationAgentResponse

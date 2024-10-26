@@ -71,7 +71,10 @@ def create_app():
                 if simulation.progress >= 100 or simulation.status != "in progress":
                     break
         except Exception as e:
-            yield f"data: {{'error': 'An error occurred: {str(e)}'}}\n\n"
+            yield f"data: {json.dumps({'error': f'An error occurred: {str(e)}'})}\n\n"
+            await asyncio.sleep(1)
+        finally:
+            pass
 
     async def traces_stream(
         simulation: Simulation, traces: List[str]
@@ -88,7 +91,10 @@ def create_app():
                 if simulation.progress >= 100 or simulation.status != "in progress":
                     break
         except Exception as e:
-            yield f"data: {{'error': 'An error occurred: {str(e)}'}}\n\n"
+            yield f"data: {json.dumps({'error': f'An error occurred: {str(e)}'})}\n\n"
+            await asyncio.sleep(1)
+        finally:
+            pass
 
     @app.get("/simulations", response_model=List[SimulationResponse])
     async def get_simulations():
@@ -105,7 +111,7 @@ def create_app():
         return await handle_get_simulation_by_id(simulation_id)
 
     @app.get("/simulations/{simulation_id}/traces", response_model=List[str])
-    async def get_simulation_traces_by_id(
+    async def get_simulation_traces(
         simulation_id: str, streaming: Optional[bool] = Query(False)
     ):
         simulation = await handle_get_simulation_by_id(simulation_id)

@@ -47,6 +47,8 @@ class Logger:
     def info(self, message: str):
         from autobox.cache.cache import Cache
 
+        if "Network stopped" in message:
+            print()
         traces = Cache.traces().get_or_create_traces_by(self.simulation_id)
         traces.append(remove_ansi_codes(message))
         self._logger.info(message)

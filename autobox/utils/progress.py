@@ -12,13 +12,13 @@ def calculate_progress(started_at: datetime, timeout: float, iterations: int) ->
     if elapsed_time >= timeout:
         return 99  # Return a maximum of 99%, allowing 100 to be set elsewhere
 
-    # Control how fast the progress slows down; higher values make it slow faster
-    alpha = 5
+    # Adjust alpha to slow down progress earlier
+    alpha = 3  # Lower alpha means the progress will slow down earlier
 
-    # Exponential decay calculation, the closer we get to timeout, the slower progress increases
-    progress = (1 - math.exp(-alpha * (elapsed_time / timeout))) * 99  # Capped at 99%
+    # Exponential decay calculation with a capped value of 99%
+    progress = (1 - math.exp(-alpha * (elapsed_time / timeout))) * 99
 
-    # Optionally adjust with iterations (e.g., adding or reducing the progress based on iterations)
+    # Optionally adjust with iterations (add or reduce based on iterations)
     adjusted_progress = min(progress + iterations, 99)  # Ensure it never exceeds 99%
 
     return round(adjusted_progress)

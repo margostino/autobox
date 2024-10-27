@@ -12,6 +12,8 @@ class SimulationStatus(str, Enum):
     new = "new"
     failed = "failed"
     completed = "completed"
+    timeout = "timeout"
+    aborted = "aborted"
 
 
 class MailboxConfig(BaseModel):

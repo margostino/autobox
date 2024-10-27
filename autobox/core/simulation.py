@@ -41,16 +41,19 @@ class Simulation(BaseModel):
             await asyncio.wait_for(task, timeout=self.timeout)
         except asyncio.TimeoutError:
             self.logger.info(f"{yellow('Simulation ended due to timeout.')}")
+            elapsed_time = self.timeout
         finally:
             self.network.stop()
             self.logger.info(f"{blue('🔚 Simulation finished.')}")
+            self.progress = 100
+            self.finished_at = datetime.now()
+            self.status = SimulationStatus.completed
+            elapsed_time = int((self.finished_at - self.started_at).total_seconds())
 
-        self.finished_at = datetime.now()
-        elapsed_time = int((self.finished_at - self.started_at).total_seconds())
-        self.progress = 100
         self.logger.info(f"{blue(f"⏱️ Elapsed time: {elapsed_time} seconds.")}")
 
     def abort(self):
         self.aborted_at = datetime.now()
+        self.status = SimulationStatus.aborted
         self.network.stop()
         self.logger.info(f"{blue('🔚 Simulation aborted.')}")

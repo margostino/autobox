@@ -30,4 +30,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.poe.tasks]
 docker-up = "docker compose up -d"
 docker-down = "docker compose down"
+docker-rm = { "shell" = "docker rm /prometheus && docker rm /grafana" }
 docker-restart = { "shell" = "docker compose down && docker compose up -d" }
